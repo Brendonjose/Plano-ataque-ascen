@@ -133,6 +133,10 @@
       for (let r = 8; r < 40; r++) {
         const apto = val(ws, 'B' + r);
         if (typeof apto !== 'number') continue;
+        // Rótulo do apto não vendido (ex.: Decorado, Modelo), lido da fórmula =IF(...="N","Decorado","sim").
+        const ca = celula(ws, 'A' + r);
+        const m = ca && ca.f && /="N","([^"]+)"/.exec(ca.f);
+        if (m && m[1] !== 'não') e.estrategia.rotulo[apto] = m[1];
         for (const [col, nome] of Object.entries(cab)) {
           const et = M.ETAPAS_QUADRO.find(x => x.col === nome && x.manual);
           if (!et) continue;

@@ -66,7 +66,7 @@
       feriados: [],
       cronograma: { metaMacro: null, prumadas: { 1: { meta: null, prioridade: 4 }, 2: { meta: null, prioridade: 3 }, 3: { meta: null, prioridade: 2 }, 4: { meta: null, prioridade: 1 } }, servicos, cicloRejunte: 1 },
       piso: { empreiteiras: { ds: 'DS ALENCAR', jun: 'Juninho' }, prodDS: { piso: 20, azulejo: 19 }, prodJun: { piso: 22, azulejo: 19 }, equipeDS: 0, equipeJun: 0, repassadosJun: 0, m2: { piso: 110, azulejo: 95 }, diasPorApto: 10 },
-      estrategia: { vendido: {}, escopo: {}, segueprioridade: {} },
+      estrategia: { vendido: {}, escopo: {}, segueprioridade: {}, rotulo: {} },
       manuais: {},
       retratoBase: {}, // aptos concluídos na data-base (BASE!W), por serviço
       pendencias: [],
