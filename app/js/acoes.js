@@ -11,6 +11,9 @@
     delete antes.meta.pilhaDesfazer;
     const novo = clone(estado);
     fn(novo);
+    // Nada mudou: não cria passo de desfazer.
+    const semPilha = o => { const c = Object.assign({}, o, { meta: Object.assign({}, o.meta, { pilhaDesfazer: [] }) }); return JSON.stringify(c); };
+    if (semPilha(novo) === semPilha(estado)) return estado;
     const pilha = (estado.meta.pilhaDesfazer || []).concat([{ rotulo, estado: antes }]);
     novo.meta.pilhaDesfazer = pilha.slice(-MAX_DESFAZER);
     return novo;

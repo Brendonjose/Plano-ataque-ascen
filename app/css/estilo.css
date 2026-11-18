@@ -201,3 +201,4 @@ table.quadro td.trc { color: var(--canc); }
   .modal { border-radius: 16px 16px 0 0; max-height: 90vh; }
 }
 @media print { .lateral, .topo .acoes-topo, .faixa { display: none; } .app { display: block; } }
+@media (max-width: 1100px) { .pilha > .grade-cartoes[style] { grid-template-columns: 1fr !important; } }

@@ -25,6 +25,7 @@
   }
   /** Aplica um novo estado: salva, recalcula e redesenha. */
   function aplicar(novo, opts) {
+    if (novo === ctx.estado && !(opts && opts.forcar)) return;
     ctx.estado = novo;
     const r = ctx.armazenamento.salvar(novo);
     ctx.salvo = r.ok; ctx.erroSalvar = r.erro;
