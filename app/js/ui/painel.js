@@ -96,7 +96,7 @@
     const gLoc = cartaoGrafico('Torre e prumadas', '% concluído');
     const gPav = cartaoGrafico('% conclusão por pavimento');
     el.appendChild(h('div.pilha',
-      h('div.grade-cartoes.g2', tabelaPrumadas(p), h('div.grade-cartoes', gStatus.el)),
+      h('div.grade-cartoes.g2', { style: { gridTemplateColumns: 'minmax(0, 3fr) minmax(0, 2fr)' } }, tabelaPrumadas(p), h('div.grade-cartoes', gStatus.el)),
       tabelaRisco(p),
       h('div.grade-cartoes.g2', gEvo.el, gServ.el),
       h('div.grade-cartoes.g3', gEmp.el, gAV.el, gLoc.el),
