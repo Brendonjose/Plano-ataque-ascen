@@ -1,0 +1,26 @@
+PLANO DE ATAQUE - VENTISETTE
+
+COMO ABRIR
+1. Dê dois cliques em index.html.
+2. Use o Chrome ou o Edge. Não use janela anônima.
+3. Na primeira vez, clique em "Importar planilha (.xlsx)".
+
+TODO DIA
+1. Abra "Lançar".
+2. Escolha o serviço.
+3. Toque no apartamento.
+4. Escolha Concluído, Em andamento ou Cancelado.
+5. Se errar, clique em "Desfazer".
+
+TODA SEMANA
+1. Abra "Histórico".
+2. Clique em "Registrar semana".
+3. Clique em "Backup" (no topo). Guarde o arquivo .json.
+
+LIBERADO E BLOQUEADO
+O sistema calcula sozinho. Não lance "ok" nem "N/L".
+
+SE PERDER OS DADOS
+1. Abra "Config.".
+2. Clique em "Restaurar backup".
+3. Escolha o último arquivo .json.
