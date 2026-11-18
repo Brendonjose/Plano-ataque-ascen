@@ -8,6 +8,7 @@ function carregarFixture() {
   return fixture;
 }
 function carregarApp() {
+  if (!globalThis.XLSX) globalThis.XLSX = require('xlsx');
   const arquivos = ['datas.js', 'modelo.js', 'importar.js', 'motor/status.js', 'motor/cronograma.js',
     'motor/datas-apto.js', 'motor/paineis.js', 'motor/calcular.js', 'armazenamento.js', 'acoes.js', 'exportar.js'];
   for (const a of arquivos) {

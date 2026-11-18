@@ -31,6 +31,9 @@
 
   function deWorkbook(wb) {
     const M = PA.modelo;
+    // Planilha exportada pelo próprio sistema: restaura a cópia exata.
+    const emb = PA.exportar && PA.exportar.estadoEmbutido ? PA.exportar.estadoEmbutido(wb) : null;
+    if (emb) { emb.meta.origem = 'planilha do sistema'; return emb; }
     const e = M.estadoVazio();
     const faltam = [...new Set(M.SERVICOS.map(s => s.aba))].concat(ESSENCIAIS).filter(n => !achaAba(wb, n));
     if (faltam.length) throw new Error('A planilha não tem a(s) aba(s): ' + faltam.join(', ') + '. Use a planilha Plano de Ataque v6 sem renomear as abas.');
