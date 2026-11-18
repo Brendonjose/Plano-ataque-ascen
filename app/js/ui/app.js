@@ -134,6 +134,7 @@
       h('h2', 'Plano de Ataque · Serviços finais'),
       h('p.mudo', 'Para começar, importe a planilha Plano de Ataque (v6) ou restaure um backup do sistema. Os dados ficam guardados neste computador.'),
       h('div.acoes', h('button.btn.prim', { onclick: importarPlanilha }, icone('subir'), 'Importar planilha (.xlsx)'), h('button.btn', { onclick: restaurarBackup }, icone('subir'), 'Restaurar backup (.json)')),
+      ctx.armazenamento.corrompido ? h('p', { style: { color: 'var(--late)', marginTop: '18px' } }, 'Os dados salvos neste navegador estavam ilegíveis. Uma cópia foi guardada (pa.estado.v1.corrompido). Restaure o último backup (.json).') : null,
       !ctx.armazenamento.disponivel ? h('p', { style: { color: 'var(--late)', marginTop: '18px' } }, 'Atenção: este navegador não está salvando dados (janela anônima?). Use uma janela normal do Chrome ou Edge.') : null);
   }
 

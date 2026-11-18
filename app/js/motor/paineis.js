@@ -12,7 +12,7 @@
   /** Lista única de empreiteiras (CONFIG!I31:I42), sem diferenciar maiúsculas (COUNTIF do Excel). */
   function empreiteiras(estado, cron) {
     const linhas = [
-      { servico: 'Piso', nome: estado.piso.empreiteiras.ds, folga: limObra(cron) - cron.piso.finalDS },
+      { servico: 'Piso', nome: estado.piso.empreiteiras.ds, folga: isNum(cron.piso.finalDS) ? limObra(cron) - cron.piso.finalDS : null },
       { servico: 'Piso', nome: estado.piso.empreiteiras.jun, folga: isNum(cron.piso.finalJun) ? limObra(cron) - cron.piso.finalJun : null }
     ];
     for (const L of cron.servicos) {

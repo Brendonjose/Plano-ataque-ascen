@@ -3,12 +3,15 @@
   'use strict';
   const PA = root.PA = root.PA || {};
 
+  // Compara nomes de aba sem diferenciar maiúsculas, espaços e º/°.
+  const chaveAba = n => String(n).trim().toLowerCase().replace(/[º°]/g, '°').replace(/\s+/g, ' ');
   function achaAba(wb, nome) {
     if (wb.Sheets[nome]) return wb.Sheets[nome];
-    const alvo = nome.trim().toLowerCase();
-    const k = wb.SheetNames.find(n => n.trim().toLowerCase() === alvo);
+    const alvo = chaveAba(nome);
+    const k = wb.SheetNames.find(n => chaveAba(n) === alvo);
     return k ? wb.Sheets[k] : null;
   }
+  const ESSENCIAIS = ['CRONOGRAMA', 'CONFIG', 'ESTRATÉGIA'];
   function celula(ws, ref) { return ws ? ws[ref] : undefined; }
   /** Valor da célula (calculado ou digitado). */
   function val(ws, ref) {
@@ -29,8 +32,9 @@
   function deWorkbook(wb) {
     const M = PA.modelo;
     const e = M.estadoVazio();
+    const faltam = [...new Set(M.SERVICOS.map(s => s.aba))].concat(ESSENCIAIS).filter(n => !achaAba(wb, n));
+    if (faltam.length) throw new Error('A planilha não tem a(s) aba(s): ' + faltam.join(', ') + '. Use a planilha Plano de Ataque v6 sem renomear as abas.');
     const piso = achaAba(wb, 'Piso');
-    if (!piso) throw new Error('A planilha não tem a aba "Piso". Use a planilha Plano de Ataque v6.');
     const cron = achaAba(wb, 'CRONOGRAMA');
     const conf = achaAba(wb, 'CONFIG');
     const estr = achaAba(wb, 'ESTRATÉGIA');
@@ -42,8 +46,7 @@
         const col = s.id === 'rejunte' ? M.colRejunte(a.final) : M.colGrade(a.final);
         const v = digitado(ws, col + M.linhaGrade(a.pav));
         if (v === null) continue;
-        const n = M.norm(v);
-        if (n === 'ok' || n === 'n/l' || n === '') continue;
+        if (M.norm(v) === '') continue; // ok/N/L digitados por cima da fórmula valem (como na v6)
         e.lancamentos[s.id][a.apto] = { codigo: typeof v === 'number' ? String(v) : String(v) };
       }
     }
@@ -66,6 +69,7 @@
     // Configuração.
     e.config.torre = String(val(conf, 'C4') || 'Torre Única');
     e.config.dataBase = data(val(conf, 'C5'));
+    if (e.config.dataBase === null) throw new Error('CONFIG!C5 (data-base do plano) está vazia.');
     e.config.janela = num(val(conf, 'C6'), 15);
     e.config.pesos = { c1: num(val(conf, 'C7'), 0.4), c2: num(val(conf, 'C8'), 0.3), c3: num(val(conf, 'C9'), 0.3) };
     e.config.notaZeroDias = num(val(conf, 'C10'), 60);
@@ -73,6 +77,7 @@
 
     // Cronograma: metas e prioridades (linhas 8–11 = F3, F4, F2, F1).
     e.cronograma.metaMacro = data(val(cron, 'D5'));
+    if (e.cronograma.metaMacro === null) throw new Error('CRONOGRAMA!D5 (data-alvo da obra) está vazia.');
     M.ORDEM_PRUMADAS.forEach((final, i) => {
       const r = 8 + i;
       const c = celula(cron, 'D' + r);

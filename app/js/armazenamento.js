@@ -10,11 +10,19 @@
     if (backend) {
       try { backend.getItem(CHAVE); disponivel = true; } catch (e) { disponivel = false; }
     }
-    return {
-      disponivel,
+    const api = {
+      disponivel, corrompido: false,
       carregar() {
         if (!disponivel) return null;
-        try { const s = backend.getItem(CHAVE); return s ? JSON.parse(s) : null; } catch (e) { return null; }
+        let s = null;
+        try { s = backend.getItem(CHAVE); } catch (e) { return null; }
+        if (!s) return null;
+        try { return JSON.parse(s); } catch (e) {
+          // Guarda o conteúdo ilegível antes que um novo salvamento o sobrescreva.
+          try { backend.setItem(CHAVE + '.corrompido', s); } catch (e2) { /* ignora */ }
+          api.corrompido = true;
+          return null;
+        }
       },
       salvar(estado) {
         if (!disponivel) return { ok: false, erro: 'indisponivel' };
@@ -24,6 +32,7 @@
       },
       limpar() { if (disponivel) try { backend.removeItem(CHAVE); } catch (e) { /* ignora */ } }
     };
+    return api;
   }
   PA.armazenamento = { criar, CHAVE };
 })(typeof globalThis !== 'undefined' ? globalThis : this);
