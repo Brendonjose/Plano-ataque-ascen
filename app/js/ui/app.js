@@ -26,10 +26,18 @@
   /** Aplica um novo estado: salva, recalcula e redesenha. */
   function aplicar(novo, opts) {
     if (novo === ctx.estado && !(opts && opts.forcar)) return;
+    // Calcula antes de salvar: uma entrada que quebra o cálculo nunca chega ao armazenamento.
+    const anterior = ctx.estado, resAnterior = ctx.resultado;
     ctx.estado = novo;
+    try { recalcular(); } catch (e) {
+      console.error(e);
+      ctx.estado = anterior; ctx.resultado = resAnterior;
+      toast('Valor não aceito: o cálculo não consegue usar esse dado. Nada foi alterado.');
+      desenhar();
+      return;
+    }
     const r = ctx.armazenamento.salvar(novo);
     ctx.salvo = r.ok; ctx.erroSalvar = r.erro;
-    recalcular();
     desenhar();
     if (opts && opts.msg) toast(opts.msg, opts.desfazer === false ? null : { rotulo: 'Desfazer', fn: desfazer });
   }
@@ -73,8 +81,10 @@
     try {
       const novo = PA.acoes.restaurarJSON(await f.text());
       if (ctx.estado) {
-        const ok = await confirmar('Restaurar backup?', 'Os dados atuais serão substituídos pelo backup "' + f.name + '".', 'Restaurar');
+        const ok = await confirmar('Restaurar backup?', 'Os dados atuais serão substituídos pelo backup "' + f.name + '". Antes, o sistema baixa uma cópia dos dados atuais.', 'Baixar cópia e restaurar');
         if (!ok) return;
+        const { backup } = PA.acoes.importarPorCima(ctx.estado, novo);
+        baixar('backup_antes_restaurar_' + PA.datas.paraISO(PA.datas.hojeSerial()) + '.json', backup, 'application/json');
       }
       aplicar(novo, { msg: 'Backup restaurado.', desfazer: false });
     } catch (e) { toast(e.message); }
@@ -86,7 +96,7 @@
   }
   function exportarExcel() {
     const wb = PA.exportar.workbook(ctx.estado, ctx.resultado);
-    XLSX.writeFile(wb, 'Plano_de_Ataque_' + PA.datas.paraISO(ctx.hoje) + '.xlsx');
+    XLSX.writeFile(wb, 'Plano_de_Ataque_' + PA.datas.paraISO(PA.datas.hojeSerial()) + '.xlsx');
     toast('Planilha exportada.');
   }
 
@@ -102,7 +112,16 @@
     return TELAS.find(t => t.id === id) || TELAS[0];
   }
 
+  /** Posição do campo com foco, para devolver o foco depois de redesenhar. */
+  function marcarFoco() {
+    let a = document.activeElement;
+    if (!a || !a.closest || !a.closest('main')) a = ctx.ultimoFoco && ctx.ultimoFoco.isConnected ? ctx.ultimoFoco : null;
+    if (!a || !a.closest || !a.closest('main')) return null;
+    const lista = [...document.querySelectorAll('main input, main select, main textarea, main button')];
+    return { i: lista.indexOf(a), tela: (location.hash || '#lancar') };
+  }
   function desenhar() {
+    const foco = marcarFoco();
     const raiz = document.getElementById('app');
     raiz.innerHTML = '';
     if (!ctx.estado) { raiz.appendChild(boasVindas()); return; }
@@ -126,6 +145,15 @@
     const principal = h('div.principal', topo, faixas, conteudo);
     raiz.appendChild(h('div.app', lateral, principal));
     try { tela.render(conteudo, ctx); } catch (e) { console.error(e); conteudo.appendChild(h('div.cartao', 'Erro ao desenhar a tela: ' + e.message)); }
+    if (foco && foco.i >= 0 && foco.tela === (location.hash || '#lancar') && !document.querySelector('.fundo-modal')) {
+      // Se a edição terminou com Tab, segue para o próximo campo (o navegador perderia o foco ao redesenhar).
+      const tab = Date.now() - (ctx.ultimoTab || 0) < 400 ? (ctx.ultimoTabShift ? -1 : 1) : 0;
+      setTimeout(() => {
+        const lista = [...document.querySelectorAll('main input, main select, main textarea, main button')];
+        const alvo = lista[foco.i + tab] || lista[foco.i];
+        if (alvo) alvo.focus({ preventScroll: true });
+      }, 0);
+    }
   }
 
   function boasVindas() {
@@ -135,6 +163,7 @@
       h('p.mudo', 'Para começar, importe a planilha Plano de Ataque (v6) ou restaure um backup do sistema. Os dados ficam guardados neste computador.'),
       h('div.acoes', h('button.btn.prim', { onclick: importarPlanilha }, icone('subir'), 'Importar planilha (.xlsx)'), h('button.btn', { onclick: restaurarBackup }, icone('subir'), 'Restaurar backup (.json)')),
       ctx.armazenamento.corrompido ? h('p', { style: { color: 'var(--late)', marginTop: '18px' } }, 'Os dados salvos neste navegador estavam ilegíveis. Uma cópia foi guardada (pa.estado.v1.corrompido). Restaure o último backup (.json).') : null,
+      ctx.erroInicio ? h('p', { style: { color: 'var(--late)', marginTop: '18px' } }, 'Os dados salvos não puderam ser calculados (' + ctx.erroInicio + '). Restaure um backup ou importe a planilha de novo.') : null,
       !ctx.armazenamento.disponivel ? h('p', { style: { color: 'var(--late)', marginTop: '18px' } }, 'Atenção: este navegador não está salvando dados (janela anônima?). Use uma janela normal do Chrome ou Edge.') : null);
   }
 
@@ -146,8 +175,16 @@
     ctx.estado = ctx.armazenamento.carregar();
     if (ctx.estado) { const v = PA.modelo.estadoVazio(); for (const k of Object.keys(v)) if (ctx.estado[k] === undefined) ctx.estado[k] = v[k]; }
     definirHoje();
-    if (ctx.estado) recalcular();
+    if (ctx.estado) {
+      try { recalcular(); } catch (e) {
+        console.error(e);
+        // Dado salvo que não calcula: não trava; oferece restaurar ou importar de novo.
+        ctx.erroInicio = e.message; ctx.estadoInvalido = ctx.estado; ctx.estado = null;
+      }
+    }
     window.addEventListener('hashchange', () => { desenhar(); window.scrollTo(0, 0); });
+    document.addEventListener('focusin', e => { ctx.ultimoFoco = e.target; });
+    document.addEventListener('keydown', e => { if (e.key === 'Tab') { ctx.ultimoTab = Date.now(); ctx.ultimoTabShift = e.shiftKey; } }, true);
     document.addEventListener('keydown', e => { if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) { e.preventDefault(); desfazer(); } });
     desenhar();
   }

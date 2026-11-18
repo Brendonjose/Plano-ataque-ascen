@@ -12,7 +12,7 @@
     const m = ctx.resultado.macro, g = m.geral;
     const k = (r, v, s, cls) => h('div.kpi.' + (cls || 'navy'), h('div.r', r), h('div.v', v), h('div.s', s || ''));
     return h('div.pilha',
-      h('div.kpis', { style: { gridTemplateColumns: 'repeat(4, minmax(0,1fr))' } },
+      h('div.kpis.k4',
         k('Meta da obra', fmt.data(g.meta), 'data-alvo macro'), k('Término projetado', fmt.dataOu(g.termino), 'equipes de hoje', g.folga < 0 ? 'late' : 'ok'),
         k('Folga', (g.folga > 0 ? '+' : '') + fmt.num(g.folga) + ' dias', g.folga < 0 ? 'atraso projetado' : 'dentro da meta', g.folga < 0 ? 'late' : 'ok'),
         k('% concluído', fmt.pct(g.pct, 1), g.entregues + ' de ' + g.aptosEscopo + ' aptos entregues', 'teal')),

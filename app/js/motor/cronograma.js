@@ -56,8 +56,9 @@
     for (const a of PA.modelo.APTOS) { const l = estado.lancamentos.piso[a.apto]; const c = l ? n(l.codigo) : ''; if (c === '1') c1++; if (c === '2') c2++; }
     const faltaDS = (94 - P.repassadosJun) - c1;
     const faltaJun = P.repassadosJun - c2;
-    const diasDS = (P.equipeDS > 0) ? (faltaDS * P.m2.piso / P.prodDS.piso / P.equipeDS) + (faltaDS * P.m2.azulejo / P.prodDS.azulejo / P.equipeDS) : null;
-    const diasJun = (P.equipeJun > 0) ? (faltaJun * P.m2.piso / P.prodJun.piso / P.equipeJun) + (faltaJun * P.m2.azulejo / P.prodJun.azulejo / P.equipeJun) : null;
+    const ok = (eq, pr) => eq > 0 && pr && pr.piso > 0 && pr.azulejo > 0;
+    const diasDS = ok(P.equipeDS, P.prodDS) ? (faltaDS * P.m2.piso / P.prodDS.piso / P.equipeDS) + (faltaDS * P.m2.azulejo / P.prodDS.azulejo / P.equipeDS) : null;
+    const diasJun = ok(P.equipeJun, P.prodJun) ? (faltaJun * P.m2.piso / P.prodJun.piso / P.equipeJun) + (faltaJun * P.m2.azulejo / P.prodJun.azulejo / P.equipeJun) : null;
     return {
       faltaDS, faltaJun, diasDS, diasJun, concluidosDS: c1, concluidosJun: c2,
       finalDS: diasDS === null ? null : D.workday(hoje, diasDS, fer),
@@ -82,6 +83,7 @@
         const P = estado.piso;
         L.unid = P.m2.piso + P.m2.azulejo;
         L.funcDia = ((P.m2.piso / P.prodDS.piso + P.m2.azulejo / P.prodDS.azulejo) + (P.m2.piso / P.prodJun.piso + P.m2.azulejo / P.prodJun.azulejo)) / 2;
+        if (!isFinite(L.funcDia)) L.funcDia = 0;
         L.prod = L.unid / L.funcDia;
         L.equipe = P.equipeDS + P.equipeJun;
         const m = Math.max(isNum(pisoCalc.diasDS) ? pisoCalc.diasDS : 0, isNum(pisoCalc.diasJun) ? pisoCalc.diasJun : 0);

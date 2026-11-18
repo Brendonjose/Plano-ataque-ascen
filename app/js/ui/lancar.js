@@ -40,12 +40,12 @@
     const aplicarCodigo = codigo => {
       let e = ctx.estado;
       const ex = extras();
-      if (unico) e = PA.acoes.lancar(e, servicoId, aptos[0], codigo === null && !ex.obs && !ex.dataReal ? null : { codigo: codigo === null ? '' : codigo, ...ex });
+      if (codigo === null) e = PA.acoes.limpar(e, servicoId, aptos);
+      else if (unico) e = PA.acoes.lancar(e, servicoId, aptos[0], { codigo, ...ex });
       else {
         e = PA.acoes.alterar(e, `${s.nome} · ${aptos.length} aptos`, novo => {
           for (const a of aptos) {
-            if (codigo === null) delete novo.lancamentos[servicoId][a];
-            else novo.lancamentos[servicoId][a] = Object.assign({}, novo.lancamentos[servicoId][a], { codigo }, ex.dataReal ? { dataReal: ex.dataReal } : {}, ex.obs ? { obs: ex.obs } : {});
+            novo.lancamentos[servicoId][a] = Object.assign({}, novo.lancamentos[servicoId][a], { codigo }, ex.dataReal ? { dataReal: ex.dataReal } : {}, ex.obs ? { obs: ex.obs } : {});
           }
         });
         ctx.ui.selecao = new Set();
@@ -66,9 +66,12 @@
       [info, h('div.mudo.peq', 'Toque na opção para lançar:'), opcoes,
         h('details', unico && (lanc.obs || lanc.dataReal) ? { open: true } : {}, h('summary.peq', 'Data de conclusão e observação (opcional)'),
           h('div.pilha', { style: { marginTop: '10px', gap: '10px' } },
-            h('label.campo', 'Data real de conclusão', h('div.linha', dataIn, h('button.btn.peq', { type: 'button', onclick: () => { dataIn.value = PA.datas.paraISO(ctx.hoje); } }, 'Hoje'))),
+            h('label.campo', 'Data real de conclusão', h('div.linha', dataIn, h('button.btn.peq', { type: 'button', onclick: () => { dataIn.value = PA.datas.paraISO(PA.datas.hojeSerial()); } }, 'Hoje'))),
             h('label.campo', 'Observação / justificativa', obsIn),
-            unico && lanc.codigo !== undefined ? h('button.btn.peq', { onclick: () => aplicarCodigo(lanc.codigo || null) }, 'Salvar só data e observação') : null))]);
+            unico ? h('button.btn.peq', { onclick: () => {
+              const ex = extras(); m.fechar();
+              PA.ui.aplicar(PA.acoes.lancar(ctx.estado, servicoId, aptos[0], (lanc.codigo || ex.obs || ex.dataReal) ? { codigo: lanc.codigo || '', ...ex } : null), { msg: 'Data e observação salvas' });
+            } }, 'Salvar só data e observação') : null))]);
   }
 
   function grade(ctx, servicoId) {

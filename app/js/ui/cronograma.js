@@ -7,9 +7,17 @@
   const FIN = [3, 4, 2, 1];
 
   function mudar(ctx, rotulo, fn) { PA.ui.aplicar(PA.acoes.alterar(ctx.estado, rotulo, fn), { msg: rotulo }); }
+  /** Campo numérico. attrs.positivo = exige > 0; attrs.min0 = exige >= 0. Valor inválido volta ao anterior. */
   function numIn(valor, aoMudar, attrs) {
+    attrs = Object.assign({}, attrs || {});
+    const positivo = attrs.positivo, min0 = attrs.min0 !== false; delete attrs.positivo; delete attrs.min0;
     return h('input', Object.assign({ type: 'number', step: 'any', value: valor === null || valor === undefined ? '' : valor, style: { width: '84px' },
-      onchange: e => { const v = e.target.value === '' ? null : Number(e.target.value); if (v === null || isFinite(v)) aoMudar(v); } }, attrs || {}));
+      onchange: e => {
+        const v = e.target.value === '' ? null : Number(e.target.value);
+        const ruim = v === null || !isFinite(v) || (positivo && v <= 0) || (min0 && v < 0) || Math.abs(v) > 1e5;
+        if (ruim) { e.target.value = valor === null || valor === undefined ? '' : valor; PA.ui.toast(positivo ? 'Use um número maior que zero.' : 'Use um número válido (zero ou mais).'); return; }
+        aoMudar(v);
+      } }, attrs));
   }
   function dataIn(valor, aoMudar, placeholder) {
     return h('input', { type: 'date', value: typeof valor === 'number' ? PA.datas.paraISO(valor) : '', title: placeholder || '', onchange: e => aoMudar(e.target.value ? PA.datas.deISO(e.target.value) : null) });
@@ -25,7 +33,7 @@
         h('tbody', FIN.map(f => h('tr', h('td', h('b', 'Final ' + f)),
           h('td', dataIn(c.prumadas[f].meta, v => mudar(ctx, 'Meta Final ' + f, e => { e.cronograma.prumadas[f].meta = v; }), 'vazio = meta da obra'),
             c.prumadas[f].meta === null ? h('span.mudo.peq', ' = meta da obra (' + fmt.data(c.metaMacro) + ')') : null),
-          h('td', numIn(c.prumadas[f].prioridade, v => v && mudar(ctx, 'Prioridade Final ' + f, e => { e.cronograma.prumadas[f].prioridade = v; }), { min: 1, max: 4, step: 1, style: { width: '64px' } })),
+          h('td', numIn(c.prumadas[f].prioridade, v => v && mudar(ctx, 'Prioridade Final ' + f, e => { e.cronograma.prumadas[f].prioridade = v; }), { positivo: true, min: 1, max: 4, step: 1, style: { width: '64px' } })),
           h('td.num', M.APTOS.filter(a => a.final === f).length), h('td'))))) ));
   }
 
@@ -37,16 +45,16 @@
         h('thead', h('tr', ['Empreiteira', 'Equipe', 'Produtiv. piso (m²/func/dia)', 'Produtiv. azulejo', 'Aptos a executar', 'Dias previstos', 'Término'].map(t => h('th', t)))),
         h('tbody',
           h('tr', h('td', h('b', P.empreiteiras.ds)), h('td', numIn(P.equipeDS, v => set('Equipe ' + P.empreiteiras.ds, p => { p.equipeDS = v || 0; }))),
-            h('td', numIn(P.prodDS.piso, v => set('Produtividade piso DS', p => { p.prodDS.piso = v; }))), h('td', numIn(P.prodDS.azulejo, v => set('Produtividade azulejo DS', p => { p.prodDS.azulejo = v; }))),
+            h('td', numIn(P.prodDS.piso, v => set('Produtividade piso DS', p => { p.prodDS.piso = v; }), { positivo: true })), h('td', numIn(P.prodDS.azulejo, v => set('Produtividade azulejo DS', p => { p.prodDS.azulejo = v; }), { positivo: true })),
             h('td', k.faltaDS), h('td', fmt.num(k.diasDS)), h('td', fmt.dataOu(k.finalDS))),
           h('tr', h('td', h('b', P.empreiteiras.jun)), h('td', numIn(P.equipeJun, v => set('Equipe ' + P.empreiteiras.jun, p => { p.equipeJun = v || 0; }))),
-            h('td', numIn(P.prodJun.piso, v => set('Produtividade piso Juninho', p => { p.prodJun.piso = v; }))), h('td', numIn(P.prodJun.azulejo, v => set('Produtividade azulejo Juninho', p => { p.prodJun.azulejo = v; }))),
+            h('td', numIn(P.prodJun.piso, v => set('Produtividade piso Juninho', p => { p.prodJun.piso = v; }), { positivo: true })), h('td', numIn(P.prodJun.azulejo, v => set('Produtividade azulejo Juninho', p => { p.prodJun.azulejo = v; }), { positivo: true })),
             h('td', k.faltaJun), h('td', fmt.num(k.diasJun)), h('td', fmt.dataOu(k.finalJun)))))),
       h('div.linha', { style: { marginTop: '10px', gap: '18px' } },
         h('label.campo', 'Aptos repassados ao ' + P.empreiteiras.jun, numIn(P.repassadosJun, v => set('Aptos repassados', p => { p.repassadosJun = v || 0; }))),
-        h('label.campo', 'Dias por apto (ciclo)', numIn(P.diasPorApto, v => set('Ciclo do piso', p => { p.diasPorApto = v; }))),
-        h('label.campo', 'm² piso por apto', numIn(P.m2.piso, v => set('m² piso', p => { p.m2.piso = v; }))),
-        h('label.campo', 'm² azulejo por apto', numIn(P.m2.azulejo, v => set('m² azulejo', p => { p.m2.azulejo = v; })))));
+        h('label.campo', 'Dias por apto (ciclo)', numIn(P.diasPorApto, v => set('Ciclo do piso', p => { p.diasPorApto = v; }), { positivo: true })),
+        h('label.campo', 'm² piso por apto', numIn(P.m2.piso, v => set('m² piso', p => { p.m2.piso = v; }), { positivo: true })),
+        h('label.campo', 'm² azulejo por apto', numIn(P.m2.azulejo, v => set('m² azulejo', p => { p.m2.azulejo = v; }), { positivo: true }))));
   }
 
   function tabelaServicos(ctx) {
@@ -65,8 +73,8 @@
           return h('tr',
             h('td', h('b', L.servico), h('div.mudo.peq', PA.motor.empreiteiraServico(ctx.estado, s.id))),
             h('td', numIn(L.prazo, set(s.id, 'prazo', 'Prazo ' + L.servico), { style: { width: '60px' } })),
-            h('td', piso ? fmt.num(L.unid) : numIn(sv(s.id).unid, set(s.id, 'unid', 'Unidades ' + L.servico))),
-            h('td', piso ? fmt.num(L.prod) : numIn(sv(s.id).produtividade, set(s.id, 'produtividade', 'Produtividade ' + L.servico))),
+            h('td', piso ? fmt.num(L.unid) : numIn(sv(s.id).unid, set(s.id, 'unid', 'Unidades ' + L.servico), { positivo: true })),
+            h('td', piso ? fmt.num(L.prod) : numIn(sv(s.id).produtividade, set(s.id, 'produtividade', 'Produtividade ' + L.servico), { positivo: true })),
             h('td', piso ? h('span', fmt.num(L.equipe), h('div.mudo.peq', 'ver bloco do piso')) : numIn(sv(s.id).equipe, set(s.id, 'equipe', 'Equipe ' + L.servico), { style: { width: '60px' } })),
             h('td.num', fmt.num(Math.round(L.ritmo * 100) / 100)),
             FIN.map(f => h('td', fmt.curta(L.limite[f]))),

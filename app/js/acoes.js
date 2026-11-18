@@ -39,6 +39,17 @@
       e.lancamentos[servicoId][apto] = l;
     });
   }
+  /** Volta os aptos ao cálculo automático: apaga código e data real, mantém a observação. */
+  function limpar(estado, servicoId, aptos) {
+    const s = PA.modelo.POR_ID[servicoId];
+    return alterar(estado, `${s.nome} · ${aptos.length === 1 ? 'apto ' + aptos[0] : aptos.length + ' aptos'}: automático`, e => {
+      for (const a of aptos) {
+        const l = e.lancamentos[servicoId][a];
+        if (!l) continue;
+        if (l.obs) e.lancamentos[servicoId][a] = { codigo: '', obs: l.obs }; else delete e.lancamentos[servicoId][a];
+      }
+    });
+  }
   function backupJSON(estado) {
     const c = clone(estado);
     c.meta.pilhaDesfazer = [];
@@ -69,8 +80,9 @@
   function marcarBackup(estado, hoje) { const e = clone(estado); e.meta.ultimoBackup = hoje; return e; }
 
   /** Grava o % realizado de hoje na semana do histórico que contém hoje. */
-  function registrarSemana(estado, res) {
-    const sem = res.historico.semanas.filter(s => s.data <= res.hoje).pop();
+  function registrarSemana(estado, res, hojeReal) {
+    const ref = typeof hojeReal === 'number' ? hojeReal : res.hoje;
+    const sem = res.historico.semanas.filter(s => s.data <= ref).pop();
     if (!sem) return estado;
     return alterar(estado, 'Registrar semana ' + sem.semana, e => {
       let h = e.historico.find(x => x.semana === sem.semana);
@@ -96,5 +108,5 @@
       if (valor === '' || valor === null) delete m[etapa]; else m[etapa] = String(valor);
     });
   }
-  PA.acoes = { alterar, desfazer, ultimoRotulo, lancar, backupJSON, restaurarJSON, importarPorCima, backupAtrasado, marcarBackup, registrarSemana, pendencia, manual };
+  PA.acoes = { limpar, alterar, desfazer, ultimoRotulo, lancar, backupJSON, restaurarJSON, importarPorCima, backupAtrasado, marcarBackup, registrarSemana, pendencia, manual };
 })(typeof globalThis !== 'undefined' ? globalThis : this);

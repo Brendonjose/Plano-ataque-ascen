@@ -20,8 +20,10 @@ test('pendências, histórico, configurações, backup e exportação', { timeou
     await page.screenshot({ path: 'test-results/pendencias.png' });
     // Registrar semana (hoje = 17/11 → semana 2).
     await page.goto(url + '#historico');
+    assert.ok(await page.locator('button:has-text("Registrar semana")').isDisabled(), 'bloqueado em modo conferência');
+    await page.click('button:has-text("Voltar para hoje")');
     await page.click('button:has-text("Registrar semana")');
-    const s2 = await page.evaluate(() => PA.ui.ctx.estado.historico.find(h => h.semana === 2));
+    const s2 = await page.evaluate(() => PA.ui.ctx.estado.historico.filter(h => typeof h.realizado === 'number').pop());
     const pct = await page.evaluate(() => PA.ui.ctx.resultado.historico.pctHoje);
     assert.ok(Math.abs(s2.realizado - pct) < 1e-12);
     await page.waitForTimeout(300);

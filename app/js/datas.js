@@ -32,7 +32,9 @@
   function diaUtil(n, fer) { const w = diaSemana(n); return w !== 0 && w !== 6 && !(fer && fer.has(n)); }
 
   /** WORKDAY do Excel: dias truncados; 0 devolve a data inicial. */
+  const LIMITE_DIAS = 36500; // ~100 anos: acima disso o dado de entrada está errado
   function workday(inicio, dias, fer) {
+    if (!isFinite(inicio) || !isFinite(dias) || Math.abs(dias) > LIMITE_DIAS) return null;
     let n = Math.floor(inicio);
     let k = Math.trunc(dias);
     const passo = k >= 0 ? 1 : -1;
@@ -42,6 +44,7 @@
   }
   /** NETWORKDAYS do Excel: inclusivo; negativo se a > b. */
   function networkdays(a, b, fer) {
+    if (!isFinite(a) || !isFinite(b) || Math.abs(b - a) > 2 * LIMITE_DIAS) return null;
     a = Math.floor(a); b = Math.floor(b);
     if (a > b) return -networkdays(b, a, fer);
     let c = 0;

@@ -8,7 +8,7 @@
 
   function formulario(ctx, p) {
     const novo = !p;
-    p = p || { apto: '', etapa: 'Geral', descricao: '', responsavel: '', abertura: ctx.hoje, prazo: null, status: 'Aberta', resolvidaEm: null, obs: '' };
+    p = p || { apto: '', etapa: 'Geral', descricao: '', responsavel: '', abertura: PA.datas.hojeSerial(), prazo: null, status: 'Aberta', resolvidaEm: null, obs: '' };
     const aptoSel = select([['', 'Escolha…'], ...M.APTOS.slice().sort((a, b) => a.apto - b.apto).map(a => [a.apto, a.apto])], p.apto, () => {});
     const etapaSel = select(ETAPAS, p.etapa, () => {});
     const desc = h('textarea', {}, p.descricao);
@@ -23,7 +23,7 @@
     const salvar = () => {
       if (!aptoSel.value || !desc.value.trim()) { PA.ui.toast('Informe o apto e a descrição.'); return; }
       const campos = { apto: Number(aptoSel.value), etapa: etapaSel.value, descricao: desc.value.trim(), responsavel: resp.value.trim(), abertura: ler(ab), prazo: ler(pr), status: st.value,
-        resolvidaEm: st.value === 'Resolvida' ? (ler(rs) || ctx.hoje) : null, obs: obs.value.trim() };
+        resolvidaEm: st.value === 'Resolvida' ? (ler(rs) || PA.datas.hojeSerial()) : null, obs: obs.value.trim() };
       m.fechar();
       PA.ui.aplicar(novo ? PA.acoes.pendencia.criar(ctx.estado, campos) : PA.acoes.pendencia.editar(ctx.estado, p.id, campos), { msg: novo ? 'Pendência criada' : 'Pendência atualizada' });
     };
@@ -56,7 +56,7 @@
             h('td', fmt.data(p.abertura)), h('td', p.atrasada ? h('b.neg', fmt.data(p.prazo)) : fmt.data(p.prazo)),
             h('td', h('span.pill.' + (p.status === 'Resolvida' ? 'ok' : (p.atrasada ? 'late' : 'and')), p.status + (p.atrasada ? ' · atrasada' : ''))),
             h('td', h('div.linha', { style: { gap: '4px', flexWrap: 'nowrap' } },
-              p.status === 'Aberta' ? h('button.btn.peq', { title: 'Marcar como resolvida', onclick: () => PA.ui.aplicar(PA.acoes.pendencia.editar(ctx.estado, p.id, { status: 'Resolvida', resolvidaEm: ctx.hoje }), { msg: 'Pendência ' + p.n + ' resolvida' }) }, icone('check')) : null,
+              p.status === 'Aberta' ? h('button.btn.peq', { title: 'Marcar como resolvida', onclick: () => PA.ui.aplicar(PA.acoes.pendencia.editar(ctx.estado, p.id, { status: 'Resolvida', resolvidaEm: PA.datas.hojeSerial() }), { msg: 'Pendência ' + p.n + ' resolvida' }) }, icone('check')) : null,
               h('button.btn.peq', { onclick: () => formulario(ctx, p) }, 'Editar'),
               h('button.btn.peq', { title: 'Excluir', onclick: async () => { if (await confirmar('Excluir pendência?', p.descricao, 'Excluir')) PA.ui.aplicar(PA.acoes.pendencia.remover(ctx.estado, p.id), { msg: 'Pendência excluída' }); } }, icone('lixo')))))))))
           : h('p.mudo', 'Nenhuma pendência com estes filtros.'))));
