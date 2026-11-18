@@ -1,0 +1,98 @@
+O4 | =110/5
+C5 | =IF(OR(LOWER(Piso!C5&"")="canc",LOWER(Piso!I5&"")="canc",LOWER('Pintura 1° Demão'!C5&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!C5="N")),"canc",IF(AND(OR(Piso!C5=1,Piso!C5=2),OR(Piso!I5=1,Piso!I5=4),'Pintura 1° Demão'!C5=1),"ok","N/L"))
+D5 | =IF(OR(LOWER(Piso!D5&"")="canc",LOWER(Piso!J5&"")="canc",LOWER('Pintura 1° Demão'!D5&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!D5="N")),"canc",IF(AND(OR(Piso!D5=1,Piso!D5=2),OR(Piso!J5=1,Piso!J5=4),'Pintura 1° Demão'!D5=1),"ok","N/L"))
+I5 | =CRONOGRAMA!$D$5
+O5 | =95/5
+C6 | =IF(OR(LOWER(Piso!C6&"")="canc",LOWER(Piso!I6&"")="canc",LOWER('Pintura 1° Demão'!C6&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!C6="N")),"canc",IF(AND(OR(Piso!C6=1,Piso!C6=2),OR(Piso!I6=1,Piso!I6=4),'Pintura 1° Demão'!C6=1),"ok","N/L"))
+D6 | =IF(OR(LOWER(Piso!D6&"")="canc",LOWER(Piso!J6&"")="canc",LOWER('Pintura 1° Demão'!D6&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!D6="N")),"canc",IF(AND(OR(Piso!D6=1,Piso!D6=2),OR(Piso!J6=1,Piso!J6=4),'Pintura 1° Demão'!D6=1),"ok","N/L"))
+I6 | =SUM(CRONOGRAMA!$E$19:$E$27)
+L6 | =L5/L4
+C7 | =IF(OR(LOWER(Piso!C7&"")="canc",LOWER(Piso!I7&"")="canc",LOWER('Pintura 1° Demão'!C7&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!C7="N")),"canc",IF(AND(OR(Piso!C7=1,Piso!C7=2),OR(Piso!I7=1,Piso!I7=4),'Pintura 1° Demão'!C7=1),"ok","N/L"))
+D7 | =IF(OR(LOWER(Piso!D7&"")="canc",LOWER(Piso!J7&"")="canc",LOWER('Pintura 1° Demão'!D7&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!D7="N")),"canc",IF(AND(OR(Piso!D7=1,Piso!D7=2),OR(Piso!J7=1,Piso!J7=4),'Pintura 1° Demão'!D7=1),"ok","N/L"))
+I7 | =CRONOGRAMA!$P$19
+C8 | =IF(OR(LOWER(Piso!C8&"")="canc",LOWER(Piso!I8&"")="canc",LOWER('Pintura 1° Demão'!C8&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!C8="N")),"canc",IF(AND(OR(Piso!C8=1,Piso!C8=2),OR(Piso!I8=1,Piso!I8=4),'Pintura 1° Demão'!C8=1),"ok","N/L"))
+D8 | =IF(OR(LOWER(Piso!D8&"")="canc",LOWER(Piso!J8&"")="canc",LOWER('Pintura 1° Demão'!D8&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!D8="N")),"canc",IF(AND(OR(Piso!D8=1,Piso!D8=2),OR(Piso!J8=1,Piso!J8=4),'Pintura 1° Demão'!D8=1),"ok","N/L"))
+I8 | =CRONOGRAMA!$Q$19
+C9 | =IF(OR(LOWER(Piso!C9&"")="canc",LOWER(Piso!I9&"")="canc",LOWER('Pintura 1° Demão'!C9&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!C9="N")),"canc",IF(AND(OR(Piso!C9=1,Piso!C9=2),OR(Piso!I9=1,Piso!I9=4),'Pintura 1° Demão'!C9=1),"ok","N/L"))
+D9 | =IF(OR(LOWER(Piso!D9&"")="canc",LOWER(Piso!J9&"")="canc",LOWER('Pintura 1° Demão'!D9&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!D9="N")),"canc",IF(AND(OR(Piso!D9=1,Piso!D9=2),OR(Piso!J9=1,Piso!J9=4),'Pintura 1° Demão'!D9=1),"ok","N/L"))
+C10 | =IF(OR(LOWER(Piso!C10&"")="canc",LOWER(Piso!I10&"")="canc",LOWER('Pintura 1° Demão'!C10&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!C10="N")),"canc",IF(AND(OR(Piso!C10=1,Piso!C10=2),OR(Piso!I10=1,Piso!I10=4),'Pintura 1° Demão'!C10=1),"ok","N/L"))
+D10 | =IF(OR(LOWER(Piso!D10&"")="canc",LOWER(Piso!J10&"")="canc",LOWER('Pintura 1° Demão'!D10&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!D10="N")),"canc",IF(AND(OR(Piso!D10=1,Piso!D10=2),OR(Piso!J10=1,Piso!J10=4),'Pintura 1° Demão'!D10=1),"ok","N/L"))
+K10 | =94-SUM(C5:D11,C12:F31)-N10-COUNTIF(C5:F31,"canc")
+L10 | =K10*L5
+N10 | =COUNTIF(C5:F31,"ref")
+O10 | =N10*205
+C11 | =IF(OR(LOWER(Piso!C11&"")="canc",LOWER(Piso!I11&"")="canc",LOWER('Pintura 1° Demão'!C11&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!C11="N")),"canc",IF(AND(OR(Piso!C11=1,Piso!C11=2),OR(Piso!I11=1,Piso!I11=4),'Pintura 1° Demão'!C11=1),"ok","N/L"))
+D11 | =IF(OR(LOWER(Piso!D11&"")="canc",LOWER(Piso!J11&"")="canc",LOWER('Pintura 1° Demão'!D11&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!D11="N")),"canc",IF(AND(OR(Piso!D11=1,Piso!D11=2),OR(Piso!J11=1,Piso!J11=4),'Pintura 1° Demão'!D11=1),"ok","N/L"))
+I11 | =CRONOGRAMA!$AK$19
+O11 | =N10*110
+C12 | =IF(OR(LOWER(Piso!C12&"")="canc",LOWER(Piso!I12&"")="canc",LOWER('Pintura 1° Demão'!C12&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!C12="N")),"canc",IF(AND(OR(Piso!C12=1,Piso!C12=2),OR(Piso!I12=1,Piso!I12=4),'Pintura 1° Demão'!C12=1),"ok","N/L"))
+D12 | =IF(OR(LOWER(Piso!D12&"")="canc",LOWER(Piso!J12&"")="canc",LOWER('Pintura 1° Demão'!D12&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!D12="N")),"canc",IF(AND(OR(Piso!D12=1,Piso!D12=2),OR(Piso!J12=1,Piso!J12=4),'Pintura 1° Demão'!D12=1),"ok","N/L"))
+E12 | =IF(OR(LOWER(Piso!E12&"")="canc",LOWER(Piso!K12&"")="canc",LOWER('Pintura 1° Demão'!E12&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!E12="N")),"canc",IF(AND(OR(Piso!E12=1,Piso!E12=2),OR(Piso!K12=1,Piso!K12=4),'Pintura 1° Demão'!E12=1),"ok","N/L"))
+F12 | =IF(OR(LOWER(Piso!F12&"")="canc",LOWER(Piso!L12&"")="canc",LOWER('Pintura 1° Demão'!F12&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!F12="N")),"canc",IF(AND(OR(Piso!F12=1,Piso!F12=2),OR(Piso!L12=1,Piso!L12=4),'Pintura 1° Demão'!F12=1),"ok","N/L"))
+I12 | =I8-I11
+O12 | =N10*95
+C13 | =IF(OR(LOWER(Piso!C13&"")="canc",LOWER(Piso!I13&"")="canc",LOWER('Pintura 1° Demão'!C13&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!C13="N")),"canc",IF(AND(OR(Piso!C13=1,Piso!C13=2),OR(Piso!I13=1,Piso!I13=4),'Pintura 1° Demão'!C13=1),"ok","N/L"))
+D13 | =IF(OR(LOWER(Piso!D13&"")="canc",LOWER(Piso!J13&"")="canc",LOWER('Pintura 1° Demão'!D13&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!D13="N")),"canc",IF(AND(OR(Piso!D13=1,Piso!D13=2),OR(Piso!J13=1,Piso!J13=4),'Pintura 1° Demão'!D13=1),"ok","N/L"))
+E13 | =IF(OR(LOWER(Piso!E13&"")="canc",LOWER(Piso!K13&"")="canc",LOWER('Pintura 1° Demão'!E13&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!E13="N")),"canc",IF(AND(OR(Piso!E13=1,Piso!E13=2),OR(Piso!K13=1,Piso!K13=4),'Pintura 1° Demão'!E13=1),"ok","N/L"))
+F13 | =IF(OR(LOWER(Piso!F13&"")="canc",LOWER(Piso!L13&"")="canc",LOWER('Pintura 1° Demão'!F13&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!F13="N")),"canc",IF(AND(OR(Piso!F13=1,Piso!F13=2),OR(Piso!L13=1,Piso!L13=4),'Pintura 1° Demão'!F13=1),"ok","N/L"))
+H13 | =IF(I12>0,"Adiantado "&I12&" dias",IF(I12=0,"No prazo","Atrasado "&ABS(I12)&" dias"))
+C14 | =IF(OR(LOWER(Piso!C14&"")="canc",LOWER(Piso!I14&"")="canc",LOWER('Pintura 1° Demão'!C14&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!C14="N")),"canc",IF(AND(OR(Piso!C14=1,Piso!C14=2),OR(Piso!I14=1,Piso!I14=4),'Pintura 1° Demão'!C14=1),"ok","N/L"))
+D14 | =IF(OR(LOWER(Piso!D14&"")="canc",LOWER(Piso!J14&"")="canc",LOWER('Pintura 1° Demão'!D14&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!D14="N")),"canc",IF(AND(OR(Piso!D14=1,Piso!D14=2),OR(Piso!J14=1,Piso!J14=4),'Pintura 1° Demão'!D14=1),"ok","N/L"))
+F14 | =IF(OR(LOWER(Piso!F14&"")="canc",LOWER(Piso!L14&"")="canc",LOWER('Pintura 1° Demão'!F14&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!F14="N")),"canc",IF(AND(OR(Piso!F14=1,Piso!F14=2),OR(Piso!L14=1,Piso!L14=4),'Pintura 1° Demão'!F14=1),"ok","N/L"))
+L14 | =L10/L4/L23
+C15 | =IF(OR(LOWER(Piso!C15&"")="canc",LOWER(Piso!I15&"")="canc",LOWER('Pintura 1° Demão'!C15&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!C15="N")),"canc",IF(AND(OR(Piso!C15=1,Piso!C15=2),OR(Piso!I15=1,Piso!I15=4),'Pintura 1° Demão'!C15=1),"ok","N/L"))
+D15 | =IF(OR(LOWER(Piso!D15&"")="canc",LOWER(Piso!J15&"")="canc",LOWER('Pintura 1° Demão'!D15&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!D15="N")),"canc",IF(AND(OR(Piso!D15=1,Piso!D15=2),OR(Piso!J15=1,Piso!J15=4),'Pintura 1° Demão'!D15=1),"ok","N/L"))
+E15 | =IF(OR(LOWER(Piso!E15&"")="canc",LOWER(Piso!K15&"")="canc",LOWER('Pintura 1° Demão'!E15&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!E15="N")),"canc",IF(AND(OR(Piso!E15=1,Piso!E15=2),OR(Piso!K15=1,Piso!K15=4),'Pintura 1° Demão'!E15=1),"ok","N/L"))
+C16 | =IF(OR(LOWER(Piso!C16&"")="canc",LOWER(Piso!I16&"")="canc",LOWER('Pintura 1° Demão'!C16&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!C16="N")),"canc",IF(AND(OR(Piso!C16=1,Piso!C16=2),OR(Piso!I16=1,Piso!I16=4),'Pintura 1° Demão'!C16=1),"ok","N/L"))
+D16 | =IF(OR(LOWER(Piso!D16&"")="canc",LOWER(Piso!J16&"")="canc",LOWER('Pintura 1° Demão'!D16&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!D16="N")),"canc",IF(AND(OR(Piso!D16=1,Piso!D16=2),OR(Piso!J16=1,Piso!J16=4),'Pintura 1° Demão'!D16=1),"ok","N/L"))
+E16 | =IF(OR(LOWER(Piso!E16&"")="canc",LOWER(Piso!K16&"")="canc",LOWER('Pintura 1° Demão'!E16&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!E16="N")),"canc",IF(AND(OR(Piso!E16=1,Piso!E16=2),OR(Piso!K16=1,Piso!K16=4),'Pintura 1° Demão'!E16=1),"ok","N/L"))
+I16 | =CRONOGRAMA!$AJ$19
+O16 | =IFERROR(O11/O4/O15,"")
+C17 | =IF(OR(LOWER(Piso!C17&"")="canc",LOWER(Piso!I17&"")="canc",LOWER('Pintura 1° Demão'!C17&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!C17="N")),"canc",IF(AND(OR(Piso!C17=1,Piso!C17=2),OR(Piso!I17=1,Piso!I17=4),'Pintura 1° Demão'!C17=1),"ok","N/L"))
+D17 | =IF(OR(LOWER(Piso!D17&"")="canc",LOWER(Piso!J17&"")="canc",LOWER('Pintura 1° Demão'!D17&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!D17="N")),"canc",IF(AND(OR(Piso!D17=1,Piso!D17=2),OR(Piso!J17=1,Piso!J17=4),'Pintura 1° Demão'!D17=1),"ok","N/L"))
+E17 | =IF(OR(LOWER(Piso!E17&"")="canc",LOWER(Piso!K17&"")="canc",LOWER('Pintura 1° Demão'!E17&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!E17="N")),"canc",IF(AND(OR(Piso!E17=1,Piso!E17=2),OR(Piso!K17=1,Piso!K17=4),'Pintura 1° Demão'!E17=1),"ok","N/L"))
+F17 | =IF(OR(LOWER(Piso!F17&"")="canc",LOWER(Piso!L17&"")="canc",LOWER('Pintura 1° Demão'!F17&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!F17="N")),"canc",IF(AND(OR(Piso!F17=1,Piso!F17=2),OR(Piso!L17=1,Piso!L17=4),'Pintura 1° Demão'!F17=1),"ok","N/L"))
+I17 | =I7-I16
+K17 | =K20-SUM(E12:F31)-COUNTIF(E12:F31,"canc")
+L17 | =K17*L5
+O17 | =IFERROR(O12/O5/O15,"")
+C18 | =IF(OR(LOWER(Piso!C18&"")="canc",LOWER(Piso!I18&"")="canc",LOWER('Pintura 1° Demão'!C18&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!C18="N")),"canc",IF(AND(OR(Piso!C18=1,Piso!C18=2),OR(Piso!I18=1,Piso!I18=4),'Pintura 1° Demão'!C18=1),"ok","N/L"))
+D18 | =IF(OR(LOWER(Piso!D18&"")="canc",LOWER(Piso!J18&"")="canc",LOWER('Pintura 1° Demão'!D18&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!D18="N")),"canc",IF(AND(OR(Piso!D18=1,Piso!D18=2),OR(Piso!J18=1,Piso!J18=4),'Pintura 1° Demão'!D18=1),"ok","N/L"))
+H18 | =IF(I17>0,"Adiantado "&I17&" dias",IF(I17=0,"No prazo","Atrasado "&ABS(I17)&" dias"))
+O18 | =O16+O17
+C19 | =IF(OR(LOWER(Piso!C19&"")="canc",LOWER(Piso!I19&"")="canc",LOWER('Pintura 1° Demão'!C19&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!C19="N")),"canc",IF(AND(OR(Piso!C19=1,Piso!C19=2),OR(Piso!I19=1,Piso!I19=4),'Pintura 1° Demão'!C19=1),"ok","N/L"))
+D19 | =IF(OR(LOWER(Piso!D19&"")="canc",LOWER(Piso!J19&"")="canc",LOWER('Pintura 1° Demão'!D19&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!D19="N")),"canc",IF(AND(OR(Piso!D19=1,Piso!D19=2),OR(Piso!J19=1,Piso!J19=4),'Pintura 1° Demão'!D19=1),"ok","N/L"))
+O19 | =IFERROR(WORKDAY(TODAY(),(O16+O17),B37:B60),"")
+C20 | =IF(OR(LOWER(Piso!C20&"")="canc",LOWER(Piso!I20&"")="canc",LOWER('Pintura 1° Demão'!C20&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!C20="N")),"canc",IF(AND(OR(Piso!C20=1,Piso!C20=2),OR(Piso!I20=1,Piso!I20=4),'Pintura 1° Demão'!C20=1),"ok","N/L"))
+D20 | =IF(OR(LOWER(Piso!D20&"")="canc",LOWER(Piso!J20&"")="canc",LOWER('Pintura 1° Demão'!D20&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!D20="N")),"canc",IF(AND(OR(Piso!D20=1,Piso!D20=2),OR(Piso!J20=1,Piso!J20=4),'Pintura 1° Demão'!D20=1),"ok","N/L"))
+E20 | =IF(OR(LOWER(Piso!E20&"")="canc",LOWER(Piso!K20&"")="canc",LOWER('Pintura 1° Demão'!E20&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!E20="N")),"canc",IF(AND(OR(Piso!E20=1,Piso!E20=2),OR(Piso!K20=1,Piso!K20=4),'Pintura 1° Demão'!E20=1),"ok","N/L"))
+L20 | =K20*L5
+C21 | =IF(OR(LOWER(Piso!C21&"")="canc",LOWER(Piso!I21&"")="canc",LOWER('Pintura 1° Demão'!C21&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!C21="N")),"canc",IF(AND(OR(Piso!C21=1,Piso!C21=2),OR(Piso!I21=1,Piso!I21=4),'Pintura 1° Demão'!C21=1),"ok","N/L"))
+D21 | =IF(OR(LOWER(Piso!D21&"")="canc",LOWER(Piso!J21&"")="canc",LOWER('Pintura 1° Demão'!D21&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!D21="N")),"canc",IF(AND(OR(Piso!D21=1,Piso!D21=2),OR(Piso!J21=1,Piso!J21=4),'Pintura 1° Demão'!D21=1),"ok","N/L"))
+E21 | =IF(OR(LOWER(Piso!E21&"")="canc",LOWER(Piso!K21&"")="canc",LOWER('Pintura 1° Demão'!E21&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!E21="N")),"canc",IF(AND(OR(Piso!E21=1,Piso!E21=2),OR(Piso!K21=1,Piso!K21=4),'Pintura 1° Demão'!E21=1),"ok","N/L"))
+L21 | =L17/L4/L23
+C22 | =IF(OR(LOWER(Piso!C22&"")="canc",LOWER(Piso!I22&"")="canc",LOWER('Pintura 1° Demão'!C22&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!C22="N")),"canc",IF(AND(OR(Piso!C22=1,Piso!C22=2),OR(Piso!I22=1,Piso!I22=4),'Pintura 1° Demão'!C22=1),"ok","N/L"))
+D22 | =IF(OR(LOWER(Piso!D22&"")="canc",LOWER(Piso!J22&"")="canc",LOWER('Pintura 1° Demão'!D22&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!D22="N")),"canc",IF(AND(OR(Piso!D22=1,Piso!D22=2),OR(Piso!J22=1,Piso!J22=4),'Pintura 1° Demão'!D22=1),"ok","N/L"))
+C23 | =IF(OR(LOWER(Piso!C23&"")="canc",LOWER(Piso!I23&"")="canc",LOWER('Pintura 1° Demão'!C23&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!C23="N")),"canc",IF(AND(OR(Piso!C23=1,Piso!C23=2),OR(Piso!I23=1,Piso!I23=4),'Pintura 1° Demão'!C23=1),"ok","N/L"))
+D23 | =IF(OR(LOWER(Piso!D23&"")="canc",LOWER(Piso!J23&"")="canc",LOWER('Pintura 1° Demão'!D23&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!D23="N")),"canc",IF(AND(OR(Piso!D23=1,Piso!D23=2),OR(Piso!J23=1,Piso!J23=4),'Pintura 1° Demão'!D23=1),"ok","N/L"))
+C24 | =IF(OR(LOWER(Piso!C24&"")="canc",LOWER(Piso!I24&"")="canc",LOWER('Pintura 1° Demão'!C24&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!C24="N")),"canc",IF(AND(OR(Piso!C24=1,Piso!C24=2),OR(Piso!I24=1,Piso!I24=4),'Pintura 1° Demão'!C24=1),"ok","N/L"))
+D24 | =IF(OR(LOWER(Piso!D24&"")="canc",LOWER(Piso!J24&"")="canc",LOWER('Pintura 1° Demão'!D24&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!D24="N")),"canc",IF(AND(OR(Piso!D24=1,Piso!D24=2),OR(Piso!J24=1,Piso!J24=4),'Pintura 1° Demão'!D24=1),"ok","N/L"))
+L24 | =CRONOGRAMA!$AV$19
+C25 | =IF(OR(LOWER(Piso!C25&"")="canc",LOWER(Piso!I25&"")="canc",LOWER('Pintura 1° Demão'!C25&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!C25="N")),"canc",IF(AND(OR(Piso!C25=1,Piso!C25=2),OR(Piso!I25=1,Piso!I25=4),'Pintura 1° Demão'!C25=1),"ok","N/L"))
+D25 | =IF(OR(LOWER(Piso!D25&"")="canc",LOWER(Piso!J25&"")="canc",LOWER('Pintura 1° Demão'!D25&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!D25="N")),"canc",IF(AND(OR(Piso!D25=1,Piso!D25=2),OR(Piso!J25=1,Piso!J25=4),'Pintura 1° Demão'!D25=1),"ok","N/L"))
+L25 | =L13/L4/L23
+C26 | =IF(OR(LOWER(Piso!C26&"")="canc",LOWER(Piso!I26&"")="canc",LOWER('Pintura 1° Demão'!C26&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!C26="N")),"canc",IF(AND(OR(Piso!C26=1,Piso!C26=2),OR(Piso!I26=1,Piso!I26=4),'Pintura 1° Demão'!C26=1),"ok","N/L"))
+D26 | =IF(OR(LOWER(Piso!D26&"")="canc",LOWER(Piso!J26&"")="canc",LOWER('Pintura 1° Demão'!D26&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!D26="N")),"canc",IF(AND(OR(Piso!D26=1,Piso!D26=2),OR(Piso!J26=1,Piso!J26=4),'Pintura 1° Demão'!D26=1),"ok","N/L"))
+L26 | =WORKDAY(TODAY(),(L21),B37:B60)
+C27 | =IF(OR(LOWER(Piso!C27&"")="canc",LOWER(Piso!I27&"")="canc",LOWER('Pintura 1° Demão'!C27&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!C27="N")),"canc",IF(AND(OR(Piso!C27=1,Piso!C27=2),OR(Piso!I27=1,Piso!I27=4),'Pintura 1° Demão'!C27=1),"ok","N/L"))
+D27 | =IF(OR(LOWER(Piso!D27&"")="canc",LOWER(Piso!J27&"")="canc",LOWER('Pintura 1° Demão'!D27&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!D27="N")),"canc",IF(AND(OR(Piso!D27=1,Piso!D27=2),OR(Piso!J27=1,Piso!J27=4),'Pintura 1° Demão'!D27=1),"ok","N/L"))
+L27 | =WORKDAY(TODAY(),(L14),B37:B60)
+C28 | =IF(OR(LOWER(Piso!C28&"")="canc",LOWER(Piso!I28&"")="canc",LOWER('Pintura 1° Demão'!C28&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!C28="N")),"canc",IF(AND(OR(Piso!C28=1,Piso!C28=2),OR(Piso!I28=1,Piso!I28=4),'Pintura 1° Demão'!C28=1),"ok","N/L"))
+D28 | =IF(OR(LOWER(Piso!D28&"")="canc",LOWER(Piso!J28&"")="canc",LOWER('Pintura 1° Demão'!D28&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!D28="N")),"canc",IF(AND(OR(Piso!D28=1,Piso!D28=2),OR(Piso!J28=1,Piso!J28=4),'Pintura 1° Demão'!D28=1),"ok","N/L"))
+L28 | =CRONOGRAMA!$AU$19
+C29 | =IF(OR(LOWER(Piso!C29&"")="canc",LOWER(Piso!I29&"")="canc",LOWER('Pintura 1° Demão'!C29&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!C29="N")),"canc",IF(AND(OR(Piso!C29=1,Piso!C29=2),OR(Piso!I29=1,Piso!I29=4),'Pintura 1° Demão'!C29=1),"ok","N/L"))
+D29 | =IF(OR(LOWER(Piso!D29&"")="canc",LOWER(Piso!J29&"")="canc",LOWER('Pintura 1° Demão'!D29&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!D29="N")),"canc",IF(AND(OR(Piso!D29=1,Piso!D29=2),OR(Piso!J29=1,Piso!J29=4),'Pintura 1° Demão'!D29=1),"ok","N/L"))
+C30 | =IF(OR(LOWER(Piso!C30&"")="canc",LOWER(Piso!I30&"")="canc",LOWER('Pintura 1° Demão'!C30&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!C30="N")),"canc",IF(AND(OR(Piso!C30=1,Piso!C30=2),OR(Piso!I30=1,Piso!I30=4),'Pintura 1° Demão'!C30=1),"ok","N/L"))
+D30 | =IF(OR(LOWER(Piso!D30&"")="canc",LOWER(Piso!J30&"")="canc",LOWER('Pintura 1° Demão'!D30&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!D30="N")),"canc",IF(AND(OR(Piso!D30=1,Piso!D30=2),OR(Piso!J30=1,Piso!J30=4),'Pintura 1° Demão'!D30=1),"ok","N/L"))
+C31 | =IF(OR(LOWER(Piso!C31&"")="canc",LOWER(Piso!I31&"")="canc",LOWER('Pintura 1° Demão'!C31&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!C31="N")),"canc",IF(AND(OR(Piso!C31=1,Piso!C31=2),OR(Piso!I31=1,Piso!I31=4),'Pintura 1° Demão'!C31=1),"ok","N/L"))
+D31 | =IF(OR(LOWER(Piso!D31&"")="canc",LOWER(Piso!J31&"")="canc",LOWER('Pintura 1° Demão'!D31&"")="canc",AND(ESTRATÉGIA!$K$8="Vendidos",ESTRATÉGIA!D31="N")),"canc",IF(AND(OR(Piso!D31=1,Piso!D31=2),OR(Piso!J31=1,Piso!J31=4),'Pintura 1° Demão'!D31=1),"ok","N/L"))

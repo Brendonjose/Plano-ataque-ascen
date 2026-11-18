@@ -1,0 +1,90 @@
+Q1 | =TODAY()
+O3 | =CRONOGRAMA!$D$5
+O4 | =SUM(CRONOGRAMA!$E$16:$E$27)
+U4 | =110/5
+Z4 | =Y4*X4
+I5 | =IF(OR(LOWER(C5&"")="canc",AND(ESTRATÉGIA!$K$6="Vendidos",ESTRATÉGIA!C5="N")),"canc",IF(C5=1,3,IF(C5=2,6,"")))
+J5 | =IF(OR(LOWER(D5&"")="canc",AND(ESTRATÉGIA!$K$6="Vendidos",ESTRATÉGIA!D5="N")),"canc",IF(D5=1,3,IF(D5=2,6,"")))
+O5 | =CRONOGRAMA!$Q$16
+R5 | =95/5
+U5 | =95/5
+Z5 | =Y5*X5
+I6 | =IF(OR(LOWER(C6&"")="canc",AND(ESTRATÉGIA!$K$6="Vendidos",ESTRATÉGIA!C6="N")),"canc",IF(C6=1,3,IF(C6=2,6,"")))
+J6 | =IF(OR(LOWER(D6&"")="canc",AND(ESTRATÉGIA!$K$6="Vendidos",ESTRATÉGIA!D6="N")),"canc",IF(D6=1,3,IF(D6=2,6,"")))
+Z6 | =Y6*X6
+I7 | =IF(OR(LOWER(C7&"")="canc",AND(ESTRATÉGIA!$K$6="Vendidos",ESTRATÉGIA!C7="N")),"canc",IF(C7=1,3,IF(C7=2,6,"")))
+J7 | =IF(OR(LOWER(D7&"")="canc",AND(ESTRATÉGIA!$K$6="Vendidos",ESTRATÉGIA!D7="N")),"canc",IF(D7=1,3,IF(D7=2,6,"")))
+Z7 | =SUM(Z4:Z6)
+I8 | =IF(OR(LOWER(C8&"")="canc",AND(ESTRATÉGIA!$K$6="Vendidos",ESTRATÉGIA!C8="N")),"canc",IF(C8=1,3,IF(C8=2,6,"")))
+J8 | =IF(OR(LOWER(D8&"")="canc",AND(ESTRATÉGIA!$K$6="Vendidos",ESTRATÉGIA!D8="N")),"canc",IF(D8=1,3,IF(D8=2,6,"")))
+O8 | =CRONOGRAMA!$AK$16
+I9 | =IF(OR(LOWER(C9&"")="canc",AND(ESTRATÉGIA!$K$6="Vendidos",ESTRATÉGIA!C9="N")),"canc",IF(C9=1,3,IF(C9=2,6,"")))
+J9 | =IF(OR(LOWER(D9&"")="canc",AND(ESTRATÉGIA!$K$6="Vendidos",ESTRATÉGIA!D9="N")),"canc",IF(D9=1,3,IF(D9=2,6,"")))
+O9 | =O5-O8
+I10 | =IF(OR(LOWER(C10&"")="canc",AND(ESTRATÉGIA!$K$6="Vendidos",ESTRATÉGIA!C10="N")),"canc",IF(C10=1,3,IF(C10=2,6,"")))
+J10 | =IF(OR(LOWER(D10&"")="canc",AND(ESTRATÉGIA!$K$6="Vendidos",ESTRATÉGIA!D10="N")),"canc",IF(D10=1,3,IF(D10=2,6,"")))
+N10 | =IF(O9>0,"Adiantado "&O9&" dias",IF(O9=0,"No prazo","Atrasado "&ABS(O9)&" dias"))
+Q10 | =(94-U7)-COUNTIF(C5:F31,1)
+R10 | =Q10*205
+T10 | =U7-COUNTIF(C5:F31,"2")
+U10 | =T10*205
+I11 | =IF(OR(LOWER(C11&"")="canc",AND(ESTRATÉGIA!$K$6="Vendidos",ESTRATÉGIA!C11="N")),"canc",IF(C11=1,3,IF(C11=2,6,"")))
+J11 | =IF(OR(LOWER(D11&"")="canc",AND(ESTRATÉGIA!$K$6="Vendidos",ESTRATÉGIA!D11="N")),"canc",IF(D11=1,3,IF(D11=2,6,"")))
+R11 | =Q10*110
+U11 | =T10*110
+I12 | =IF(OR(LOWER(C12&"")="canc",AND(ESTRATÉGIA!$K$6="Vendidos",ESTRATÉGIA!C12="N")),"canc",IF(C12=1,3,IF(C12=2,6,"")))
+J12 | =IF(OR(LOWER(D12&"")="canc",AND(ESTRATÉGIA!$K$6="Vendidos",ESTRATÉGIA!D12="N")),"canc",IF(D12=1,3,IF(D12=2,6,"")))
+K12 | =IF(OR(LOWER(E12&"")="canc",AND(ESTRATÉGIA!$K$6="Vendidos",ESTRATÉGIA!E12="N")),"canc",IF(E12=1,3,IF(E12=2,6,"")))
+L12 | =IF(OR(LOWER(F12&"")="canc",AND(ESTRATÉGIA!$K$6="Vendidos",ESTRATÉGIA!F12="N")),"canc",IF(F12=1,3,IF(F12=2,6,"")))
+R12 | =Q10*95
+U12 | =T10*95
+Z12 | =Y12*X12
+N13 | =COUNTIF(C5:F31,"1")&" Apartamentos Executados"
+Z13 | =Y13*X13
+L14 | =IF(OR(LOWER(F14&"")="canc",AND(ESTRATÉGIA!$K$6="Vendidos",ESTRATÉGIA!F14="N")),"canc",IF(F14=1,3,IF(F14=2,6,"")))
+N14 | ="(3) "&COUNTIF(I5:L31,3)&" Apartamentos sem rejunte "
+Z14 | =Y14*X14
+K15 | =IF(OR(LOWER(E15&"")="canc",AND(ESTRATÉGIA!$K$6="Vendidos",ESTRATÉGIA!E15="N")),"canc",IF(E15=1,3,IF(E15=2,6,"")))
+N15 | ="(2) "& COUNTIF(I5:L31,2)&" Apartamentos Rejuntando"
+Z15 | =Y15*X15
+J16 | =IF(OR(LOWER(D16&"")="canc",AND(ESTRATÉGIA!$K$6="Vendidos",ESTRATÉGIA!D16="N")),"canc",IF(D16=1,3,IF(D16=2,6,"")))
+N16 | ="(1) "&COUNTIF(I5:L31,1)&" Apartamentos Rejuntados"
+R16 | =R11/R4/R15
+U16 | =IFERROR(U11/U4/U15,"")
+Z16 | =SUM(Z12:Z15)
+I17 | =IF(OR(LOWER(C17&"")="canc",AND(ESTRATÉGIA!$K$6="Vendidos",ESTRATÉGIA!C17="N")),"canc",IF(C17=1,3,IF(C17=2,6,"")))
+J17 | =IF(OR(LOWER(D17&"")="canc",AND(ESTRATÉGIA!$K$6="Vendidos",ESTRATÉGIA!D17="N")),"canc",IF(D17=1,3,IF(D17=2,6,"")))
+K17 | =IF(OR(LOWER(E17&"")="canc",AND(ESTRATÉGIA!$K$6="Vendidos",ESTRATÉGIA!E17="N")),"canc",IF(E17=1,3,IF(E17=2,6,"")))
+L17 | =IF(OR(LOWER(F17&"")="canc",AND(ESTRATÉGIA!$K$6="Vendidos",ESTRATÉGIA!F17="N")),"canc",IF(F17=1,3,IF(F17=2,6,"")))
+R17 | =R12/R5/R15
+U17 | =IFERROR(U12/U5/U15,"")
+J18 | =IF(OR(LOWER(D18&"")="canc",AND(ESTRATÉGIA!$K$6="Vendidos",ESTRATÉGIA!D18="N")),"canc",IF(D18=1,3,IF(D18=2,6,"")))
+L18 | =IF(OR(LOWER(F18&"")="canc",AND(ESTRATÉGIA!$K$6="Vendidos",ESTRATÉGIA!F18="N")),"canc",IF(F18=1,3,IF(F18=2,6,"")))
+N18 | =COUNTIF(C5:F31,"2")&" Apartamentos Executados"
+R18 | =R16+R17
+U18 | =U16+U17
+I19 | =IF(OR(LOWER(C19&"")="canc",AND(ESTRATÉGIA!$K$6="Vendidos",ESTRATÉGIA!C19="N")),"canc",IF(C19=1,3,IF(C19=2,6,"")))
+N19 | ="(6) "&COUNTIF(I5:L31,6)&" Apartamentos sem rejunte"
+R19 | =WORKDAY(Q1,(R16+R17),B37:B60)
+U19 | =IFERROR(WORKDAY(TODAY(),(U16+U17),B37:B60),"")
+I20 | =IF(OR(LOWER(C20&"")="canc",AND(ESTRATÉGIA!$K$6="Vendidos",ESTRATÉGIA!C20="N")),"canc",IF(C20=1,3,IF(C20=2,6,"")))
+N20 | ="(5) "&COUNTIF(I5:L31,5)&" Apartamentos rejuntando"
+K21 | =IF(OR(LOWER(E21&"")="canc",AND(ESTRATÉGIA!$K$6="Vendidos",ESTRATÉGIA!E21="N")),"canc",IF(E21=1,3,IF(E21=2,6,"")))
+N21 | ="(4) "&COUNTIF(I5:L31,4)&" Apartamentos Rejuntados"
+Z21 | =Y21*X21
+I22 | =IF(OR(LOWER(C22&"")="canc",AND(ESTRATÉGIA!$K$6="Vendidos",ESTRATÉGIA!C22="N")),"canc",IF(C22=1,3,IF(C22=2,6,"")))
+Z22 | =Y22*X22
+Z23 | =Y23*X23
+O24 | =Q10+T10
+R24 | =WORKDAY(O8,O4)
+Z24 | =SUM(Z21:Z23)
+O25 | =R11+U11
+R25 | =(766865.694-996329.688)
+O26 | =R12+U12
+R26 | =(766865.694-996329.688)+(Z7*T10)-(Z16*T10)
+I27 | =IF(OR(LOWER(C27&"")="canc",AND(ESTRATÉGIA!$K$6="Vendidos",ESTRATÉGIA!C27="N")),"canc",IF(C27=1,3,IF(C27=2,6,"")))
+J27 | =IF(OR(LOWER(D27&"")="canc",AND(ESTRATÉGIA!$K$6="Vendidos",ESTRATÉGIA!D27="N")),"canc",IF(D27=1,3,IF(D27=2,6,"")))
+O27 | =O5
+R27 | =R26-R25
+O28 | =NETWORKDAYS(Q1,O27)
+O29 | =CRONOGRAMA!$AV$16
