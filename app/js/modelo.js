@@ -68,6 +68,7 @@
       piso: { empreiteiras: { ds: 'DS ALENCAR', jun: 'Juninho' }, prodDS: { piso: 20, azulejo: 19 }, prodJun: { piso: 22, azulejo: 19 }, equipeDS: 0, equipeJun: 0, repassadosJun: 0, m2: { piso: 110, azulejo: 95 }, diasPorApto: 10 },
       estrategia: { vendido: {}, escopo: {}, segueprioridade: {} },
       manuais: {},
+      retratoBase: {}, // aptos concluídos na data-base (BASE!W), por serviço
       pendencias: [],
       historico: [],
       meta: { ultimoBackup: null, pilhaDesfazer: [], importadoEm: null, origem: null }

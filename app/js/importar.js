@@ -53,6 +53,7 @@
       for (const s of M.SERVICOS) {
         for (const a of M.APTOS) {
           const r = 5 + 94 * (s.ordem - 1) + a.idx;
+          if (num(val(base, 'W' + r), 0) === 1) (e.retratoBase[s.id] = e.retratoBase[s.id] || []).push(a.apto);
           const p = digitado(base, 'P' + r), x = digitado(base, 'X' + r);
           if (p === null && x === null) continue;
           const l = e.lancamentos[s.id][a.apto] || (e.lancamentos[s.id][a.apto] = { codigo: '' });
