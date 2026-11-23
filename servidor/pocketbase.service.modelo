@@ -1,0 +1,27 @@
+# Serviço do Plano de Ataque (gerado por servidor/instalar.sh — não edite à mão).
+[Unit]
+Description=Plano de Ataque Ventisette (PocketBase)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=__USUARIO__
+Group=__USUARIO__
+WorkingDirectory=__DESTINO__
+ExecStart=__DESTINO__/pocketbase serve __DOMINIO__ --dir __DESTINO__/pb_data --publicDir __DESTINO__/pb_public --migrationsDir __DESTINO__/pb_migrations --hooksDir __DESTINO__/pb_hooks --origins https://__DOMINIO__
+Restart=always
+RestartSec=5
+LimitNOFILE=4096
+# Pode abrir as portas 80/443 sem ser root.
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+# Isolamento: só escreve nos próprios dados.
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=__DESTINO__/pb_data
+
+[Install]
+WantedBy=multi-user.target
