@@ -207,3 +207,13 @@ table.quadro td.trc { color: var(--canc); }
 
 .kpis.k4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 @media (max-width: 760px) { .kpis.k4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } .kpi .v { font-size: 22px; overflow-wrap: anywhere; } }
+/* Acompanhamento */
+.grupo-lista { border-top: 1px solid var(--line); padding: 10px 0; }
+.grupo-lista summary { cursor: pointer; list-style: none; }
+.grupo-lista summary::-webkit-details-marker { display: none; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.chip-apto { border: 1px solid var(--line-2); background: var(--surface); border-radius: 8px; padding: 5px 9px; display: inline-flex; gap: 6px; align-items: baseline; font-size: 13px; }
+.chip-apto small { color: var(--text-3); font-size: 11px; }
+.chip-apto:hover { border-color: var(--navy-2); }
+.alerta-pend { color: var(--and); font-weight: 700; }
+.link-num { border: 0; background: transparent; color: var(--teal-2); font-weight: 700; text-decoration: underline; padding: 0; font: inherit; }
