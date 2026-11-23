@@ -50,11 +50,14 @@ test('ninguém muda o próprio papel; admin muda o dos outros', async () => {
   assert.strictEqual(d.nome, 'Diretor');
   assert.ok([400, 403, 404].includes(await falha(c.collection('users').create({ email: 'x@x.local', password: 'Senha-teste-123', passwordConfirm: 'Senha-teste-123', papel: 'admin', ativo: true }))));
 });
-test('usuário inativo não lê nem grava', async () => {
-  const c = await S.cliente('inativo');
+test('usuário inativo não entra; desativado com sessão aberta não lê nem grava', async () => {
+  await assert.rejects(S.cliente('inativo'));
+  const c = await S.cliente('obra2');
+  await S.su.collection('users').update(S.usuarios.obra2.id, { ativo: false });
   const lista = await c.collection('lancamentos').getList(1, 10).catch(e => ({ items: [], status: e.status }));
   assert.strictEqual(lista.items.length, 0);
   assert.ok([400, 403, 404].includes(await falha(c.collection('lancamentos').create({ id: 'l05011000000000', servico: 'loucas', apto: 11, codigo: '1' }))));
+  await S.su.collection('users').update(S.usuarios.obra2.id, { ativo: true });
 });
 test('autoria vem do servidor e o histórico registra antes/depois', async () => {
   const c = await S.cliente('obra2');
