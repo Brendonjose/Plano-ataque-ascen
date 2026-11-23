@@ -67,9 +67,7 @@ Depois que o sistema estiver no ar, o Brendon quer um **roteiro de como manter o
 ## 3. Restrições
 
 - **EC2 com Linux.** O Brendon informa o tamanho e o sistema operacional na implantação; uma t3.micro ou t3.small atende.
-- **HTTPS gratuito (Let's Encrypt) exige um nome de site:**
-  - um subdomínio de domínio que a ASCEN já tenha (só um registro DNS, sem custo); **ou**
-  - um subdomínio gratuito do DuckDNS.
+- **HTTPS gratuito (Let's Encrypt) exige um nome de site:** será um **subdomínio gratuito do DuckDNS** (ex.: `planoventisette.duckdns.org`). Decisão do Brendon: não é possível criar subdomínio no domínio da ASCEN.
 - **Sem etapa de build no front:** scripts clássicos, como na v1. O SDK do PocketBase entra em `app/vendor/` como UMD, com versão fixa.
 - **Versão do PocketBase:** ainda não chegou à 1.0, então a versão é **fixada** e a atualização segue o `OPERACAO.md`.
 - **Datas:** DD/MM/AAAA, pt-BR.
