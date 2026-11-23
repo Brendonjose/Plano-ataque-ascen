@@ -71,7 +71,10 @@
       return usuario();
     }
     async function renovar() {
-      try { await pb.collection('users').authRefresh(); return usuario(); } catch (e) { pb.authStore.clear(); return null; }
+      try { await pb.collection('users').authRefresh(); return usuario(); } catch (e) {
+        if (!e || !e.status) return usuario(); // sem conexão: mantém a sessão guardada
+        pb.authStore.clear(); return null;
+      }
     }
     function sair() { pararTempoReal(); pb.authStore.clear(); }
 
@@ -113,7 +116,14 @@
       const falhas = [];
       if (!pb.authStore.isValid) return { ok: false, falhas: ops.map(op => ({ op, motivo: 'sessao' })) };
       for (const op of ops) {
-        try { await gravarUma(op); } catch (err) { falhas.push({ op, motivo: motivo(err), erro: err && err.message }); }
+        try { await gravarUma(op); } catch (err) {
+          let m = motivo(err);
+          // Recusa pode ser acesso revogado (usuário desativado/papel trocado): confirma a sessão.
+          if (m === 'permissao') {
+            try { await pb.collection('users').authRefresh(); } catch (e2) { if (e2 && e2.status) { pb.authStore.clear(); m = 'sessao'; } else m = 'rede'; }
+          }
+          falhas.push({ op, motivo: m, erro: err && err.message });
+        }
       }
       return { ok: falhas.length === 0, falhas };
     }
@@ -176,5 +186,7 @@
 
     return { modo: 'servidor', pb, url, entrar, sair, renovar, usuario, carregar, gravar, importarTudo, aoMudar, pararTempoReal, versaoLocal, versoesServidor, usuarios, alteracoes };
   }
-  PA.dados.servidor = { criar, opParaRegistro, registroParaOp };
+  /** Chave única do registro afetado por uma operação (para conferir versões). */
+  function chaveOp(op) { const r = opParaRegistro(op); return r.colecao + ':' + r.id; }
+  PA.dados.servidor = { criar, opParaRegistro, registroParaOp, chaveOp };
 })(typeof globalThis !== 'undefined' ? globalThis : this);

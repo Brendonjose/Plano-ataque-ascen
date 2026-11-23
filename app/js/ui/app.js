@@ -4,7 +4,17 @@
   const PA = root.PA;
   const { h, icone, toast, confirmar, baixar, escolherArquivo } = PA.ui;
   const TELAS = [];
-  const ctx = { estado: null, resultado: null, hoje: null, conferencia: null, filtros: {}, ui: {}, armazenamento: null, salvo: true };
+  const ctx = { estado: null, resultado: null, hoje: null, conferencia: null, filtros: {}, ui: {}, armazenamento: null, salvo: true,
+    dados: null, usuario: null, fila: null, minhasVersoes: {}, semConexao: false };
+  const servidor = () => ctx.dados && ctx.dados.modo === 'servidor';
+  /** Permissões por papel (a regra de verdade está no servidor; aqui só esconde o que não se pode fazer). */
+  const PERM = {
+    admin: ['lancar', 'equipe', 'parametros', 'usuarios', 'alteracoes', 'ranking', 'estrategia', 'config', 'importar', 'pendencias', 'semana'],
+    obra: ['lancar', 'equipe', 'alteracoes', 'ranking', 'estrategia', 'pendencias', 'semana'],
+    diretoria: ['ranking', 'estrategia'],
+    empreiteira: []
+  };
+  function pode(acao) { const p = ctx.usuario ? ctx.usuario.papel : 'admin'; return (PERM[p] || []).includes(acao); }
 
   function registrarTela(id, def) { TELAS.push(Object.assign({ id }, def)); }
 
@@ -36,15 +46,37 @@
       desenhar();
       return;
     }
-    const r = ctx.armazenamento.salvar(novo);
-    ctx.salvo = r.ok; ctx.erroSalvar = r.erro;
+    if (servidor()) {
+      const ops = PA.dados.diff(anterior || PA.modelo.estadoVazio(), novo);
+      guardarCache();
+      if (ops.length && !(opts && opts.semEnvio)) ctx.fila.enviar(ops);
+    } else {
+      const r = ctx.armazenamento.salvar(novo);
+      ctx.salvo = r.ok; ctx.erroSalvar = r.erro;
+    }
     desenhar();
     if (opts && opts.msg) toast(opts.msg, opts.desfazer === false ? null : { rotulo: 'Desfazer', fn: desfazer });
   }
-  function desfazer() {
+  async function desfazer() {
     if (!ctx.estado || !(ctx.estado.meta.pilhaDesfazer || []).length) return;
     const rot = PA.acoes.ultimoRotulo(ctx.estado);
-    aplicar(PA.acoes.desfazer(ctx.estado));
+    const volta = PA.acoes.desfazer(ctx.estado);
+    if (servidor()) {
+      // Confere se outra pessoa mexeu nos mesmos registros depois da minha alteração.
+      const ops = PA.dados.diff(ctx.estado, volta);
+      const naFila = new Set(ctx.fila.ops().map(PA.dados.servidor.chaveOp));
+      const checar = ops.filter(op => !naFila.has(PA.dados.servidor.chaveOp(op)));
+      let srv;
+      try { srv = await ctx.dados.versoesServidor(checar); } catch (e) { toast('Sem conexão: não foi possível conferir o desfazer.'); return; }
+      const conflito = checar.some(op => { const k = PA.dados.servidor.chaveOp(op); return srv[k] !== (ctx.minhasVersoes[k] || null); });
+      if (conflito) {
+        ctx.estado.meta.pilhaDesfazer.pop();
+        desenhar();
+        toast('Outra pessoa alterou depois. Desfazer cancelado: ' + rot);
+        return;
+      }
+    }
+    aplicar(volta);
     toast('Desfeito: ' + rot);
   }
   function definirConferencia(serial) {
@@ -61,6 +93,14 @@
       const novo = PA.importar.deWorkbook(wb);
       novo.meta.importadoEm = PA.datas.hojeSerial();
       novo.meta.origem = f.name;
+      if (servidor()) {
+        const ok = await confirmar('Importar a planilha no servidor?', 'A planilha "' + f.name + '" vira a base de todos os usuários. Isso só pode ser feito uma vez.', 'Importar');
+        if (!ok) return;
+        await ctx.dados.importarTudo(novo);
+        await carregarDoServidor();
+        toast('Planilha importada no servidor.');
+        return;
+      }
       if (ctx.estado) {
         const ok = await confirmar('Substituir os dados atuais?', 'Os lançamentos feitos no sistema serão substituídos pelos da planilha "' + f.name + '". Antes, o sistema baixa um backup dos dados atuais.', 'Baixar backup e substituir');
         if (!ok) return;
@@ -76,6 +116,7 @@
     }
   }
   async function restaurarBackup() {
+    if (servidor()) { toast('No modo servidor, os backups são restaurados pelo administrador no próprio servidor (ver OPERACAO.md).'); return; }
     const f = await escolherArquivo('.json');
     if (!f) return;
     try {
@@ -90,6 +131,11 @@
     } catch (e) { toast(e.message); }
   }
   function salvarBackup() {
+    if (servidor()) {
+      baixar('Plano_de_Ataque_backup_' + PA.datas.paraISO(PA.datas.hojeSerial()) + '.json', PA.acoes.backupJSON(ctx.estado), 'application/json');
+      toast('Cópia dos dados salva na pasta de downloads.');
+      return;
+    }
     const e = PA.acoes.marcarBackup(ctx.estado, PA.datas.hojeSerial());
     baixar('Plano_de_Ataque_backup_' + PA.datas.paraISO(PA.datas.hojeSerial()) + '.json', PA.acoes.backupJSON(e), 'application/json');
     aplicar(e, { msg: 'Backup salvo na pasta de downloads.', desfazer: false });
@@ -124,11 +170,13 @@
     const foco = marcarFoco();
     const raiz = document.getElementById('app');
     raiz.innerHTML = '';
+    if (servidor() && !ctx.usuario) { raiz.appendChild(PA.ui.login.tela(ctx.dados, aoEntrar)); return; }
+    if (servidor() && ctx.estado && vazio(ctx.estado)) { raiz.appendChild(servidorVazio()); return; }
     if (!ctx.estado) { raiz.appendChild(boasVindas()); return; }
     const tela = telaAtual();
     const nav = h('nav', { 'aria-label': 'Telas' }, TELAS.map(t => h('a' + (t === tela ? '.ativo' : ''), { href: '#' + t.id, title: t.titulo }, icone(t.icone), h('span', t.menu || t.titulo))));
     const lateral = h('aside.lateral', h('div.marca', h('img', { src: 'img/logo_ASCEN.png', alt: 'ASCEN' }), h('span', 'Ventisette · Plano de Ataque')), nav,
-      h('div.rodape', 'Dados neste computador', h('br'), ctx.estado.meta.origem ? 'Origem: ' + ctx.estado.meta.origem : ''));
+      h('div.rodape', servidor() ? ['Dados no servidor', h('br'), ctx.usuario.nome + ' · ' + ctx.usuario.papel] : ['Dados neste computador', h('br'), ctx.estado.meta.origem ? 'Origem: ' + ctx.estado.meta.origem : '']));
     const podeDesfazer = (ctx.estado.meta.pilhaDesfazer || []).length > 0;
     const topo = h('header.topo',
       h('div', h('h1', tela.titulo), h('div.sub', 'Edifício Ventisette · ' + ctx.estado.config.torre + ' · hoje ' + PA.datas.fmt(ctx.hoje))),
@@ -136,11 +184,16 @@
       h('div.linha.acoes-topo',
         h('button.btn.peq', { onclick: desfazer, disabled: !podeDesfazer, title: podeDesfazer ? 'Desfazer: ' + PA.acoes.ultimoRotulo(ctx.estado) : 'Nada para desfazer' }, icone('desfazer'), 'Desfazer'),
         h('button.btn.peq', { onclick: salvarBackup, title: 'Baixar backup (.json)' }, icone('baixar'), 'Backup'),
-        h('button.btn.peq', { onclick: () => { tema(true); desenhar(); }, title: 'Tema claro/escuro', 'aria-label': 'Alternar tema' }, icone(document.documentElement.getAttribute('data-tema') === 'escuro' ? 'sol' : 'lua'))));
+        h('button.btn.peq', { onclick: () => { tema(true); desenhar(); }, title: 'Tema claro/escuro', 'aria-label': 'Alternar tema' }, icone(document.documentElement.getAttribute('data-tema') === 'escuro' ? 'sol' : 'lua')),
+        servidor() ? h('button.btn.peq', { onclick: sair, title: 'Sair (' + ctx.usuario.nome + ')' }, 'Sair') : null));
     const faixas = [];
     if (ctx.conferencia) faixas.push(h('div.faixa.amarela', { role: 'alert' }, '⚠ Modo conferência: o sistema está calculando como se hoje fosse ' + PA.datas.fmt(ctx.conferencia) + '.', h('button', { onclick: () => definirConferencia(null) }, 'Voltar para hoje')));
-    if (!ctx.armazenamento.disponivel || !ctx.salvo) faixas.push(h('div.faixa.vermelha', { role: 'alert' }, ctx.erroSalvar === 'cota' ? '⚠ O navegador está sem espaço: os dados NÃO estão sendo salvos. Baixe um backup agora.' : '⚠ Dados não estão sendo salvos neste navegador (janela anônima ou bloqueio). Baixe um backup antes de fechar.', h('button', { onclick: salvarBackup }, 'Baixar backup')));
-    else if (PA.acoes.backupAtrasado(ctx.estado, PA.datas.hojeSerial())) faixas.push(h('div.faixa.amarela', 'Faça um backup dos dados: o último foi ' + (ctx.estado.meta.ultimoBackup ? 'em ' + PA.datas.fmt(ctx.estado.meta.ultimoBackup) : 'nunca') + '.', h('button', { onclick: salvarBackup }, 'Fazer backup agora')));
+    if (servidor()) {
+      const n = ctx.fila.pendentes();
+      if (ctx.semConexao) faixas.push(h('div.faixa.vermelha', { role: 'alert' }, '⚠ Sem conexão com o servidor: mostrando os dados salvos neste aparelho.'));
+      if (n) faixas.push(h('div.faixa.amarela', { role: 'status', 'data-fila': n }, `${n} ${n === 1 ? 'lançamento aguardando' : 'lançamentos aguardando'} envio. O sistema envia sozinho quando a conexão voltar.`, h('button', { onclick: () => ctx.fila.retomar() }, 'Tentar agora')));
+    } else if (!ctx.armazenamento.disponivel || !ctx.salvo) faixas.push(h('div.faixa.vermelha', { role: 'alert' }, ctx.erroSalvar === 'cota' ? '⚠ O navegador está sem espaço: os dados NÃO estão sendo salvos. Baixe um backup agora.' : '⚠ Dados não estão sendo salvos neste navegador (janela anônima ou bloqueio). Baixe um backup antes de fechar.', h('button', { onclick: salvarBackup }, 'Baixar backup')));
+    else if (!servidor() && PA.acoes.backupAtrasado(ctx.estado, PA.datas.hojeSerial())) faixas.push(h('div.faixa.amarela', 'Faça um backup dos dados: o último foi ' + (ctx.estado.meta.ultimoBackup ? 'em ' + PA.datas.fmt(ctx.estado.meta.ultimoBackup) : 'nunca') + '.', h('button', { onclick: salvarBackup }, 'Fazer backup agora')));
     const conteudo = h('main.conteudo');
     const principal = h('div.principal', topo, faixas, conteudo);
     raiz.appendChild(h('div.app', lateral, principal));
@@ -167,11 +220,100 @@
       !ctx.armazenamento.disponivel ? h('p', { style: { color: 'var(--late)', marginTop: '18px' } }, 'Atenção: este navegador não está salvando dados (janela anônima?). Use uma janela normal do Chrome ou Edge.') : null);
   }
 
+  // ---------- Modo servidor ----------
+  const vazio = e => e.config.dataBase === null && e.cronograma.metaMacro === null;
+  function servidorVazio() {
+    return h('div.boas-vindas',
+      h('img', { src: 'img/logo_Ventisette.png', alt: 'Ventisette' }), h('h2', 'Plano de Ataque · Serviços finais'),
+      pode('importar') ? [h('p.mudo', 'O servidor ainda não tem dados. Importe a planilha Plano de Ataque (v6). Isso é feito uma única vez.'),
+        h('div.acoes', h('button.btn.prim', { onclick: importarPlanilha }, icone('subir'), 'Importar planilha (.xlsx)'))]
+        : h('p.mudo', 'O administrador ainda não carregou a planilha. Tente de novo mais tarde.'),
+      h('div.acoes', h('button.btn', { onclick: sair }, 'Sair')));
+  }
+  const chaveCache = () => 'pa.cache.' + (ctx.usuario ? ctx.usuario.id : 'x');
+  function guardarCache() {
+    try { const c = JSON.parse(JSON.stringify(ctx.estado)); c.meta.pilhaDesfazer = []; localStorage.setItem(chaveCache(), JSON.stringify(c)); } catch (e) { /* sem espaço */ }
+  }
+  async function carregarDoServidor() {
+    try {
+      ctx.estado = await ctx.dados.carregar();
+      ctx.semConexao = false;
+      // Operações ainda na fila (feitas sem conexão) continuam valendo na tela.
+      ctx.estado = PA.dados.aplicarOps(ctx.estado, ctx.fila.ops());
+    } catch (e) {
+      let c = null; try { c = JSON.parse(localStorage.getItem(chaveCache()) || 'null'); } catch (e2) { c = null; }
+      if (!c) throw e;
+      ctx.estado = PA.dados.aplicarOps(c, ctx.fila.ops());
+      ctx.semConexao = true;
+    }
+    if (!ctx.estado.meta.pilhaDesfazer) ctx.estado.meta.pilhaDesfazer = [];
+    if (!vazio(ctx.estado)) { recalcular(); guardarCache(); }
+    desenhar();
+  }
+  function prepararFila() {
+    ctx.fila = PA.dados.fila.criar(ctx.dados, ctx.usuario.id, {
+      sucesso: op => { const k = PA.dados.servidor.chaveOp(op); ctx.minhasVersoes[k] = ctx.dados.versaoLocal(op); },
+      mudou: (n, motivo) => { if (motivo === 'rede') ctx.semConexao = true; else if (!n) ctx.semConexao = false; desenhar(); },
+      sessao: () => pedirLogin('Sua sessão expirou ou o acesso foi alterado. Entre de novo para enviar os lançamentos.'),
+      recusa: (op, f) => { toast('O servidor recusou uma alteração (sem permissão). Recarregando os dados.'); carregarDoServidor(); }
+    });
+  }
+  function pedirLogin(aviso) {
+    if (document.querySelector('.fundo-modal.login')) return;
+    const m = PA.ui.modal('Entre de novo', PA.ui.login.formulario(ctx.dados, async u => {
+      m.fechar(); ctx.usuario = u; ctx.fila.retomar(); desenhar();
+    }, aviso));
+    m.el.parentNode.classList.add('login');
+  }
+  async function aoEntrar(u) {
+    ctx.usuario = u;
+    prepararFila();
+    await carregarDoServidor();
+    // Mudanças de outros usuários chegam uma a uma: junta e recalcula uma vez (ex.: importação = milhares).
+    let lote = [], tLote = null;
+    ctx.dados.aoMudar(op => {
+      lote.push(op);
+      if (tLote) return;
+      tLote = setTimeout(() => {
+        const ops = lote; lote = []; tLote = null;
+        if (!ctx.estado) return;
+        ctx.estado = PA.dados.aplicarOps(ctx.estado, ops);
+        if (vazio(ctx.estado)) { desenhar(); return; }
+        try { recalcular(); } catch (e) { console.error(e); }
+        guardarCache();
+        if (!document.querySelector('.fundo-modal')) desenhar(); else ctx.redesenharAoFechar = true;
+      }, 300);
+    }).catch(() => { /* tempo real indisponível: segue sem */ });
+    ctx.fila.processar();
+    if (u.papel === 'empreiteira' && !location.hash && PA.ui.TELAS.some(t => t.id === 'acompanhamento')) location.hash = '#acompanhamento';
+  }
+  function sair() {
+    if (ctx.fila && ctx.fila.pendentes() && !confirm('Há lançamentos ainda não enviados. Se sair agora, eles ficam guardados neste aparelho e serão enviados no próximo login. Sair mesmo assim?')) return;
+    ctx.dados.sair(); ctx.usuario = null; ctx.estado = null; ctx.resultado = null; desenhar();
+  }
+
   function iniciar() {
     tema(false);
     let backend = null;
     try { backend = window.localStorage; } catch (e) { backend = null; }
     ctx.armazenamento = PA.armazenamento.criar(backend);
+    // Aberto por um servidor (http/https) → modo multiusuário; aberto como arquivo → modo local da v1.
+    const cfg = root.PA_CONFIG || {};
+    if (/^https?:$/.test(location.protocol) && cfg.modo !== 'local' && root.PocketBase) {
+      ctx.dados = PA.dados.servidor.criar(cfg.servidor || location.origin);
+      definirHoje();
+      window.addEventListener('hashchange', () => { desenhar(); window.scrollTo(0, 0); });
+      document.addEventListener('focusin', e => { ctx.ultimoFoco = e.target; });
+      document.addEventListener('keydown', e => { if (e.key === 'Tab') { ctx.ultimoTab = Date.now(); ctx.ultimoTabShift = e.shiftKey; } }, true);
+      const u = ctx.dados.usuario();
+      if (u) {
+        aoEntrar(u).catch(e => { console.error(e); ctx.usuario = null; desenhar(); });
+        // Confirma a sessão com o servidor (usuário desativado cai para o login).
+        ctx.dados.renovar().then(r => { if (!r && !ctx.semConexao) { ctx.usuario = null; desenhar(); } });
+      } else desenhar();
+      return;
+    }
+    ctx.dados = PA.dados.local.criar(ctx.armazenamento);
     ctx.estado = ctx.armazenamento.carregar();
     if (ctx.estado) { const v = PA.modelo.estadoVazio(); for (const k of Object.keys(v)) if (ctx.estado[k] === undefined) ctx.estado[k] = v[k]; }
     definirHoje();
@@ -189,5 +331,5 @@
     desenhar();
   }
 
-  Object.assign(PA.ui, { registrarTela, ctx, aplicar, desfazer, desenhar, recalcular, importarPlanilha, restaurarBackup, salvarBackup, exportarExcel, definirConferencia, iniciar, TELAS });
+  Object.assign(PA.ui, { pode, registrarTela, ctx, aplicar, desfazer, desenhar, recalcular, importarPlanilha, restaurarBackup, salvarBackup, exportarExcel, definirConferencia, iniciar, TELAS });
 })(typeof globalThis !== 'undefined' ? globalThis : this);
