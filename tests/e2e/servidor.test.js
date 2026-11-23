@@ -89,3 +89,19 @@ test('dois usuários ao mesmo tempo; desfazer conferido; acesso revogado pede lo
   await S.su.collection('users').update(S.usuarios.obra2.id, { ativo: true });
   await a.context.close(); await b.context.close();
 });
+test('desfazer só mexe no que eu alterei (não recria o que outra pessoa apagou)', { timeout: 120000 }, async () => {
+  const a = await entrar('obra'); const b = await entrar('obra2');
+  await a.page.waitForSelector('.servicos-fita'); await b.page.waitForSelector('.servicos-fita');
+  const uid = await b.page.evaluate(() => PA.ui.ctx.estado.pendencias[0].id);
+  await lancar(a.page, 'Louças', 101, 'Em andamento');
+  assert.ok(await esperar(async () => (await S.su.collection('lancamentos').getFullList({ filter: 'servico="loucas" && apto=101' })).length === 1));
+  // B apaga uma pendência; A vê sumir ao vivo.
+  await b.page.evaluate(id => PA.ui.aplicar(PA.acoes.pendencia.remover(PA.ui.ctx.estado, id)), uid);
+  assert.ok(await esperar(async () => (await S.su.collection('pendencias').getFullList({ filter: `uid="${uid}"` })).length === 0));
+  assert.ok(await esperar(async () => !(await a.page.evaluate(id => PA.ui.ctx.estado.pendencias.some(p => p.id === id), uid))));
+  await a.page.click('.acoes-topo button:has-text("Desfazer")');
+  assert.ok(await esperar(async () => (await S.su.collection('lancamentos').getFullList({ filter: 'servico="loucas" && apto=101' })).length === 0), 'meu lançamento desfeito');
+  await new Promise(r => setTimeout(r, 1500));
+  assert.strictEqual((await S.su.collection('pendencias').getFullList({ filter: `uid="${uid}"` })).length, 0, 'pendência apagada por B continua apagada');
+  await a.context.close(); await b.context.close();
+});

@@ -30,6 +30,9 @@ async function subir(opts) {
   const PocketBase = require('pocketbase/cjs');
   const su = new PocketBase(url); su.autoCancellation(false);
   await su.collection('_superusers').authWithPassword(SUPER.email, SUPER.senha);
+  // Os testes fazem muitos logins seguidos: o limite de tentativas (ligado pela migração) só é testado à parte.
+  const regras = (await su.settings.getAll()).rateLimits;
+  await su.settings.update({ rateLimits: Object.assign({}, regras, { enabled: !!(opts && opts.limites) }) });
   const usuarios = {};
   for (const [papel, extra] of Object.entries(Object.assign({ admin: {}, obra: {}, obra2: {}, diretoria: {}, empreiteira: { empreiteira: 'Camargo' }, inativo: {} }, (opts && opts.usuarios) || {}))) {
     const p = papel === 'obra2' ? 'obra' : (papel === 'inativo' ? 'obra' : papel);

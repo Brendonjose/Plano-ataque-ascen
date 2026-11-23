@@ -48,6 +48,10 @@
     }
     if (servidor()) {
       const ops = PA.dados.diff(anterior || PA.modelo.estadoVazio(), novo);
+      // Guarda no passo de desfazer quais registros ESTA ação mudou (o desfazer só mexe neles).
+      const ultimo = p => (p && p.length ? p[p.length - 1].id : null);
+      const pn = novo.meta.pilhaDesfazer || [];
+      if (pn.length && ultimo(pn) !== ultimo(anterior && anterior.meta.pilhaDesfazer)) pn[pn.length - 1].chaves = ops.map(PA.dados.servidor.chaveOp);
       guardarCache();
       if (ops.length && !(opts && opts.semEnvio)) ctx.fila.enviar(ops);
     } else {
@@ -60,21 +64,28 @@
   async function desfazer() {
     if (!ctx.estado || !(ctx.estado.meta.pilhaDesfazer || []).length) return;
     const rot = PA.acoes.ultimoRotulo(ctx.estado);
-    const volta = PA.acoes.desfazer(ctx.estado);
+    let volta = PA.acoes.desfazer(ctx.estado);
     if (servidor()) {
-      // Confere se outra pessoa mexeu nos mesmos registros depois da minha alteração.
-      const ops = PA.dados.diff(ctx.estado, volta);
+      const pilha = ctx.estado.meta.pilhaDesfazer;
+      const passo = pilha[pilha.length - 1];
+      const chaves = new Set(passo.chaves || []);
+      // Só os registros que ESTA ação mudou; o resto (mudanças de outras pessoas) fica como está.
+      const ops = PA.dados.diff(ctx.estado, volta).filter(op => chaves.has(PA.dados.servidor.chaveOp(op)));
       const naFila = new Set(ctx.fila.ops().map(PA.dados.servidor.chaveOp));
       const checar = ops.filter(op => !naFila.has(PA.dados.servidor.chaveOp(op)));
       let srv;
       try { srv = await ctx.dados.versoesServidor(checar); } catch (e) { toast('Sem conexão: não foi possível conferir o desfazer.'); return; }
+      // Conflito: o registro no servidor não é mais a versão que EU gravei (alterado ou apagado por outra pessoa).
       const conflito = checar.some(op => { const k = PA.dados.servidor.chaveOp(op); return srv[k] !== (ctx.minhasVersoes[k] || null); });
       if (conflito) {
-        ctx.estado.meta.pilhaDesfazer.pop();
+        pilha.pop();
         desenhar();
         toast('Outra pessoa alterou depois. Desfazer cancelado: ' + rot);
         return;
       }
+      const base = JSON.parse(JSON.stringify(ctx.estado));
+      base.meta.pilhaDesfazer = pilha.slice(0, -1);
+      volta = PA.dados.aplicarOps(base, ops);
     }
     aplicar(volta);
     toast('Desfeito: ' + rot);
@@ -272,8 +283,14 @@
   }
   function pedirLogin(aviso) {
     if (document.querySelector('.fundo-modal.login')) return;
+    const anterior = ctx.usuario ? ctx.usuario.id : null;
     const m = PA.ui.modal('Entre de novo', PA.ui.login.formulario(ctx.dados, async u => {
-      m.fechar(); ctx.usuario = u; ctx.fila.retomar(); desenhar();
+      m.fechar();
+      if (u.id !== anterior) {
+        // Outra pessoa entrou: a fila do usuário anterior fica guardada para ele e não é enviada.
+        if (ctx.fila) ctx.fila.parar();
+        ctx.usuario = u; ctx.minhasVersoes = {}; prepararFila(); await carregarDoServidor(); ctx.fila.processar();
+      } else { ctx.usuario = u; ctx.fila.retomar(); desenhar(); }
     }, aviso));
     m.el.parentNode.classList.add('login');
   }
@@ -301,6 +318,8 @@
   }
   function sair() {
     if (ctx.fila && ctx.fila.pendentes() && !confirm('Há lançamentos ainda não enviados. Se sair agora, eles ficam guardados neste aparelho e serão enviados no próximo login. Sair mesmo assim?')) return;
+    if (ctx.fila) ctx.fila.parar();
+    ctx.fila = null; ctx.minhasVersoes = {};
     ctx.dados.sair(); ctx.usuario = null; ctx.estado = null; ctx.resultado = null; desenhar();
   }
 

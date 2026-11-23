@@ -46,7 +46,7 @@
   /** Classifica um erro do PocketBase. */
   function motivo(err) {
     const st = err && err.status;
-    if (!st) return 'rede';
+    if (!st || st === 429 || st >= 500) return 'rede'; // temporário: tenta de novo depois
     if (st === 401) return 'sessao';
     return 'permissao';
   }
@@ -107,7 +107,11 @@
       let r;
       try { r = await col.update(id, dados); } catch (err) {
         if (err.status !== 404) throw err;
-        r = await col.create(Object.assign({ id }, dados));
+        try { r = await col.create(Object.assign({ id }, dados)); } catch (e2) {
+          // Outra pessoa criou o mesmo registro ao mesmo tempo: vale a última gravação → atualiza.
+          if (e2.status !== 400) throw e2;
+          r = await col.update(id, dados);
+        }
       }
       versoes[chave(colecao, id)] = r.updated;
     }

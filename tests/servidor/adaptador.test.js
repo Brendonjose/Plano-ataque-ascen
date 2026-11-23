@@ -49,3 +49,33 @@ test('equipe gravada pela obra aparece no estado', async () => {
   const e = await d.carregar();
   assert.deepStrictEqual([e.cronograma.servicos.loucas.equipe, e.piso.equipeDS], [3, 5]);
 });
+test('I1: duas primeiras gravações no mesmo registro ao mesmo tempo: as duas dão certo (última vale)', async () => {
+  const a = await adaptador('obra'), b = await adaptador('admin');
+  for (let i = 0; i < 5; i++) {
+    const apto = 101 + i * 10;
+    const [ra, rb] = await Promise.all([
+      a.gravar([{ tipo: 'lanc', servico: 'checklist', apto, valor: { codigo: 'and' } }]),
+      b.gravar([{ tipo: 'lanc', servico: 'checklist', apto, valor: { codigo: '1' } }])]);
+    assert.deepStrictEqual([ra.ok, rb.ok], [true, true], JSON.stringify([ra.falhas, rb.falhas]));
+  }
+});
+test('I3: muitas tentativas de senha errada são limitadas; avatar e emailVisibility protegidos', async () => {
+  const PB = require('pocketbase/cjs');
+  const c = new PB(S.url); c.autoCancellation(false);
+  const cfg = await S.su.settings.getAll();
+  assert.strictEqual(cfg.rateLimits.rules.some(r => r.label === '*:auth'), true, 'migração criou a regra de login');
+  await S.su.settings.update({ rateLimits: Object.assign({}, cfg.rateLimits, { enabled: true }) });
+  let limitado = false;
+  for (let i = 0; i < 30 && !limitado; i++) {
+    try { await c.collection('users').authWithPassword('obra@teste.local', 'errada-' + i); } catch (e) { if (e.status === 429) limitado = true; }
+  }
+  await S.su.settings.update({ rateLimits: Object.assign({}, cfg.rateLimits, { enabled: false }) });
+  assert.ok(limitado, 'login limitado (429)');
+  const col = await S.su.collections.getOne('users');
+  assert.ok(!col.fields.some(f => f.name === 'avatar'), 'sem campo avatar');
+  const settings = await S.su.settings.getAll();
+  assert.strictEqual(settings.batch.enabled, false);
+  const obra = await S.cliente('obra2');
+  await obra.collection('users').update(S.usuarios.obra2.id, { emailVisibility: true }).catch(() => null);
+  assert.strictEqual((await S.su.collection('users').getOne(S.usuarios.obra2.id)).emailVisibility, false);
+});
