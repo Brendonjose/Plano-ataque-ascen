@@ -217,3 +217,20 @@ table.quadro td.trc { color: var(--canc); }
 .chip-apto:hover { border-color: var(--navy-2); }
 .alerta-pend { color: var(--and); font-weight: 700; }
 .link-num { border: 0; background: transparent; color: var(--teal-2); font-weight: 700; text-decoration: underline; padding: 0; font: inherit; }
+/* Relatório */
+.rel-cab { display: flex; align-items: center; gap: 16px; border-bottom: 2px solid var(--navy); padding-bottom: 10px; }
+.rel-cab img { height: 26px; }
+:root[data-tema="escuro"] .rel-cab img { filter: brightness(0) invert(1); }
+@media print {
+  @page { size: A4; margin: 12mm; }
+  :root { --bg: #fff; }
+  body { background: #fff; color: #000; }
+  .lateral, .topo, .faixa, .filtros-rel, .toasts { display: none !important; }
+  .app, .principal { display: block !important; }
+  .conteudo { padding: 0 !important; max-width: none; }
+  .relatorio-folha { border: 0; box-shadow: none; padding: 0; }
+  .tabela-wrap { overflow: visible; border: 0; }
+  table.tab th { position: static; }
+  table.tab { font-size: 11px; }
+  tr { page-break-inside: avoid; }
+}

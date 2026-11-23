@@ -1,0 +1,42 @@
+'use strict';
+const test = require('node:test');
+const assert = require('node:assert');
+const { chromium } = require('playwright');
+const { subir, SENHA } = require('../servidor/util');
+const { carregarApp, lerWorkbookV6 } = require('../helpers');
+globalThis.PocketBase = require('pocketbase/cjs');
+const PA = carregarApp();
+let S, browser;
+test.before(async () => {
+  S = await subir(); browser = await chromium.launch();
+  const d = PA.dados.servidor.criar(S.url); await d.entrar('admin@teste.local', SENHA);
+  await d.importarTudo(PA.importar.deWorkbook(lerWorkbookV6()));
+});
+test.after(async () => { if (browser) await browser.close(); if (S) await S.parar(); });
+
+test('empreiteira vê só o próprio relatório; imprimir e Excel', { timeout: 90000 }, async () => {
+  const context = await browser.newContext({ viewport: { width: 1280, height: 900 }, acceptDownloads: true });
+  const page = await context.newPage();
+  const erros = []; page.on('pageerror', e => erros.push(String(e)));
+  await page.goto(S.url + '/');
+  await page.evaluate(() => sessionStorage.setItem('pa.hojeConferencia', String(PA.datas.deISO('2026-11-17'))));
+  await page.fill('input[type=email]', 'empreiteira@teste.local'); await page.fill('input[type=password]', SENHA);
+  await page.click('button[type=submit]');
+  await page.waitForSelector('.lateral nav');
+  await page.goto(S.url + '/#relatorios');
+  await page.waitForSelector('.relatorio-folha');
+  assert.ok(await page.locator('.filtros-rel label:has-text("Empreiteira") input').isDisabled());
+  await page.click('label:has-text("Final 1") input'); await page.click('label:has-text("Final 2") input');
+  const linhas = await page.locator('table.rel-linhas tbody tr').count();
+  const esperado = await page.evaluate(() => PA.motor.relatorio(PA.ui.ctx.estado, PA.ui.ctx.resultado, { empreiteira: 'Camargo', prumadas: [3, 4] }).linhas.length);
+  assert.strictEqual(linhas, esperado);
+  await page.evaluate(() => { window.__imprimiu = 0; window.print = () => { window.__imprimiu++; }; });
+  await page.click('button:has-text("Imprimir")');
+  assert.strictEqual(await page.evaluate(() => window.__imprimiu), 1);
+  const [dl] = await Promise.all([page.waitForEvent('download'), page.click('button:has-text("Excel")')]);
+  assert.match(dl.suggestedFilename(), /^Relatorio_Camargo_.*\.xlsx$/);
+  await page.emulateMedia({ media: 'print' });
+  await page.screenshot({ path: 'test-results/relatorio-impressao.png', fullPage: true });
+  assert.deepStrictEqual(erros, []);
+  await context.close();
+});

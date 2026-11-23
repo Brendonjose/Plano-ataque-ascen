@@ -37,16 +37,14 @@ test('admin importa a v6 uma vez; obra lança e a diretoria vê ao vivo', { time
   await adm.page.click('.modal button.prim');
   await adm.page.waitForSelector('.servicos-fita', { timeout: 30000 });
   const dir = await entrar('diretoria');
-  await dir.page.waitForSelector('.servicos-fita');
+  await dir.page.waitForSelector('.kpis'); // diretoria abre no Painel
   const obra = await entrar('obra');
   await obra.page.waitForSelector('.servicos-fita');
   assert.notStrictEqual(await status(dir.page, 4, 193), 'Concluído');
   await lancar(obra.page, 'Portas', 193, 'Concluído');
   assert.ok(await esperar(async () => (await status(dir.page, 4, 193)) === 'Concluído'), 'diretoria viu ao vivo');
-  // Diretoria: sem opções de lançamento e a API recusa.
-  await dir.page.click('.servico-chip:has-text("Portas")');
-  await dir.page.click('.celula[data-apto="194"]');
-  assert.strictEqual(await dir.page.locator('.opcao').count(), 0);
+  // Diretoria: sem tela de lançamento e a API recusa.
+  assert.strictEqual(await dir.page.locator('.lateral nav a:has-text("Lançar")').count(), 0);
   const r = await dir.page.evaluate(() => PA.ui.ctx.dados.gravar([{ tipo: 'lanc', servico: 'portas', apto: 194, valor: { codigo: '1' } }]));
   assert.deepStrictEqual([r.ok, r.falhas[0].motivo], [false, 'permissao']);
   assert.deepStrictEqual(adm.erros.concat(dir.erros, obra.erros), []);

@@ -86,5 +86,19 @@
     for (let r = 2; ws['A' + r]; r++) s += String(ws['A' + r].v);
     return PA.acoes.restaurarJSON(s);
   }
-  PA.exportar = { workbook, estadoEmbutido };
+  /** Relatório por empreiteira em Excel. */
+  function relatorio(rel) {
+    const wb = X().utils.book_new();
+    const c = rel.cabecalho;
+    const linhas = [
+      ['RELATÓRIO DE PRAZOS — EDIFÍCIO VENTISETTE'], ['Empreiteira', c.empreiteira], ['Prumadas', c.prumadas.map(f => 'Final ' + f).join(', ')], ['Emitido em', dt(c.emitidoEm)], [],
+      ['Serviço', 'Executado', 'Total', '% executado', 'Data-limite', 'Término no ritmo atual', 'Folga (dias)', 'Equipe atual', 'Equipe necessária'],
+      ...c.servicos.map(s => [s.nome, s.executado, s.total, pc(s.pct), dt(s.limite), dt(s.termino), vz(s.folga), s.equipe, vz(s.necessaria)]), [],
+      ['Apto', 'Pav', 'Final', 'Serviço', 'Situação', 'PRECISA ESTAR PRONTO', 'Previsto no ritmo atual', 'Data-limite', 'Pendências abertas'],
+      ...rel.linhas.map(l => [l.apto, l.pav, l.final, l.servico, l.situacao + (l.atrasado ? ' (atrasado)' : ''), dt(l.dataNecessaria), dt(l.previsto), dt(l.limite), l.pendencias || ''])
+    ];
+    aba(wb, 'Relatório', linhas, [8, 6, 6, 22, 18, 20, 20, 14, 12]);
+    return wb;
+  }
+  PA.exportar = { workbook, estadoEmbutido, relatorio };
 })(typeof globalThis !== 'undefined' ? globalThis : this);
