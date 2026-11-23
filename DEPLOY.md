@@ -12,10 +12,15 @@ Faça os passos na ordem.
 
 ## 2. Preparar a EC2
 
-1. Use uma instância **Ubuntu 24.04 LTS**. Uma t3.micro ou t3.small atende.
+1. Crie a instância com:
+   - **Ubuntu Server 24.04 LTS, 64-bit (x86)**. Não use ARM/Graviton (t4g): o instalador baixa a versão x86.
+   - Tipo **t3.micro** (nível gratuito em contas novas) ou **t3.small** (mais folga).
+   - Disco **20 GB gp3**.
+   - Um par de chaves novo, no formato `.pem`. Guarde a chave com cuidado.
+   - Região **São Paulo (sa-east-1)**, mais rápida para a obra, ou **us-east-1**, mais barata.
 2. Associe um **IP elástico** à instância:
    - Vá em **EC2 → Elastic IPs → Allocate → Associate**.
-   - O IP elástico é gratuito enquanto estiver ligado a uma instância em funcionamento.
+   - Custo: a AWS cobra todo IP público (cerca de US$ 0,005 por hora). Em contas novas, o nível gratuito de 12 meses costuma cobrir. Esse é o único custo além da instância; confira os preços em calculator.aws.
 3. No DuckDNS, cole esse IP no campo "current ip" do seu domínio e clique em **update ip**.
 4. No **Security Group** da instância, deixe só estas entradas:
    - **22** (SSH), **só para o seu IP** ("My IP");
