@@ -69,6 +69,20 @@
           h('td', x.prioridade), h('td', h('b', x.servico)), h('td', x.empreiteira), h('td', x.local), h('td', fmt.data(x.limite)),
           h('td', h('span.pill.' + (x.situacao.startsWith('ATRASADO') ? 'late' : 'and'), x.situacao)), h('td.num', x.diasAtraso), h('td.num', fmt.num(x.diasVencer)), h('td.peq', x.obs)))))));
   }
+  function blocoPendencias(ctx, f) {
+    const p = PA.motor.pendenciasPainel(ctx.resultado, { prumada: f.prumada, pavimento: f.pavimento });
+    const k = (cls, r, v) => h('div.kpi.' + cls, h('div.r', r), h('div.v', v));
+    return h('div.cartao.bloco-pendencias', h('h2', 'Pendências por apartamento', h('small', 'responde aos filtros de prumada e pavimento · ', h('a', { href: '#pendencias' }, 'ver todas'))),
+      h('div.grade-cartoes', { style: { gridTemplateColumns: 'repeat(3, minmax(0, 160px)) minmax(0, 1fr)', alignItems: 'start' } },
+        k('and', 'Abertas', p.abertas), k('late', 'Atrasadas', p.atrasadas), k('ok', 'Resolvidas', p.resolvidas),
+        h('div.peq', h('b', 'Abertas por prumada: '), [1, 2, 3, 4].map(n => 'F' + n + ' ' + (p.porPrumada[n] || 0)).join(' · '), h('br'),
+          h('b', 'Por responsável: '), p.porResponsavel.map(r => r.responsavel + ' ' + r.abertas + (r.atrasadas ? ' (' + r.atrasadas + ' atras.)' : '')).join(' · ') || '—')),
+      p.aptos.length ? h('div.tabela-wrap', { style: { marginTop: '12px', maxHeight: '320px' } }, h('table.tab',
+        h('thead', h('tr', ['Apto', 'Pendências', 'Etapas', 'Prazo mais próximo'].map(t => h('th', t)))),
+        h('tbody', p.aptos.map(a => h('tr', h('td', h('b', a.apto)), h('td', a.qtd + (a.atrasadas ? ' · ' : ''), a.atrasadas ? h('span.neg', a.atrasadas + ' atrasada(s)') : null),
+          h('td', a.etapas.join(', ')), h('td', fmt.dataOu(a.prazoMaisProximo)))))))
+        : h('p.mudo', { style: { marginTop: '10px' } }, 'Nenhuma pendência aberta neste recorte.'));
+  }
   function cartaoGrafico(titulo, sub, alto) {
     const cv = h('canvas', { role: 'img', 'aria-label': titulo });
     return { el: h('div.cartao', h('h2', titulo, sub ? h('small', sub) : null), h('div.graf' + (alto ? '.alto' : ''), cv)), cv };
@@ -98,6 +112,7 @@
     el.appendChild(h('div.pilha',
       h('div.grade-cartoes.g2', { style: { gridTemplateColumns: 'minmax(0, 3fr) minmax(0, 2fr)' } }, tabelaPrumadas(p), h('div.grade-cartoes', gStatus.el)),
       tabelaRisco(p),
+      blocoPendencias(ctx, f),
       h('div.grade-cartoes.g2', gEvo.el, gServ.el),
       h('div.grade-cartoes.g3', gEmp.el, gAV.el, gLoc.el),
       gPav.el,

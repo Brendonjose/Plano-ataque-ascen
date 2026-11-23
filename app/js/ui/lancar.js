@@ -96,9 +96,10 @@
         const it = itemDe(res, s.ordem, apto);
         const cls = classeItem(it);
         const vendido = ctx.estado.estrategia.vendido[apto] === 'V';
-        const tag = servicoId === 'piso' && it.status === 'Concluído' ? (PA.modelo.norm(it.codigo) === '1' ? 'DS' : 'JN') : (it.obs ? '✎' : '');
+        const nPend = (res.pendencias.abertasPorApto || {})[apto] || 0;
+        const tag = (nPend ? '⚠ ' : '') + (servicoId === 'piso' && it.status === 'Concluído' ? (PA.modelo.norm(it.codigo) === '1' ? 'DS' : 'JN') : (it.obs ? '✎' : ''));
         g.appendChild(h('button.celula.' + cls.split(' ').join('.') + (sel.has(apto) ? '.sel' : ''), {
-          title: `Apto ${apto} · ${rotuloItem(it)}${it.atrasado ? ' · atrasado' : ''} · ${it.detalhe}${vendido ? '' : ' · não vendido'}`,
+          title: `Apto ${apto} · ${rotuloItem(it)}${it.atrasado ? ' · atrasado' : ''} · ${it.detalhe}${vendido ? '' : ' · não vendido'}${nPend ? ' · ' + nPend + ' pendência(s) aberta(s)' : ''}`,
           'data-apto': apto,
           onclick: () => {
             if (ctx.ui.modoSelecao) { if (sel.has(apto)) sel.delete(apto); else sel.add(apto); ctx.ui.selecao = sel; PA.ui.desenhar(); return; }
