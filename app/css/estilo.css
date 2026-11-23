@@ -231,6 +231,9 @@ table.quadro td.trc { color: var(--canc); }
   .relatorio-folha { border: 0; box-shadow: none; padding: 0; }
   .tabela-wrap { overflow: visible; border: 0; }
   table.tab th { position: static; }
-  table.tab { font-size: 11px; }
+  table.tab { font-size: 10px; }
+  table.tab th, table.tab td { padding: 3px 5px; white-space: normal; }
+  .relatorio-folha .pill { padding: 0 4px; font-size: 9px; white-space: normal; }
   tr { page-break-inside: avoid; }
+  .rel-cab img { filter: none !important; }
 }

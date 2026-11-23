@@ -7,9 +7,10 @@
   const isNum = v => typeof v === 'number' && isFinite(v);
   const low = s => String(s || '').trim().toLowerCase();
 
-  function passa(it, f) {
-    return (!f.servico || it.servico === f.servico) &&
-      (!f.empreiteira || low(it.empreiteira) === low(f.empreiteira)) &&
+  function passa(it, f, estado) {
+    const emp = low(f.empreiteira);
+    const daEmp = !f.empreiteira || (estado && PA.motor.daEmpreiteira ? PA.motor.daEmpreiteira(estado, it, emp) : low(it.empreiteira) === emp);
+    return (!f.servico || it.servico === f.servico) && daEmp &&
       (!f.pavimento || it.pav === Number(f.pavimento)) &&
       (!f.prumada || f.prumada === 'Final ' + it.final || f.prumada === it.grupo);
   }
@@ -21,10 +22,11 @@
   }
   const porNecessaria = (a, b) => (isNum(a.dataNecessaria) ? a.dataNecessaria : Infinity) - (isNum(b.dataNecessaria) ? b.dataNecessaria : Infinity) || a.apto - b.apto;
 
-  function acompanhamento(res, filtros) {
+  /** estado (opcional) faz o filtro de empreiteira incluir os aptos de piso ainda "A definir", como no relatório. */
+  function acompanhamento(res, filtros, estado) {
     const f = filtros || {};
     const pend = (res.pendencias && res.pendencias.abertasPorApto) || {};
-    const sel = res.itens.filter(it => passa(it, f)).map(it => Object.assign({}, it, { pendencias: pend[it.apto] || 0 }));
+    const sel = res.itens.filter(it => passa(it, f, estado)).map(it => Object.assign({}, it, { pendencias: pend[it.apto] || 0 }));
     const numeros = contar(sel);
     const serv = f.servico ? PA.modelo.SERVICOS.find(s => s.nome === f.servico) : null;
     const L = serv ? res.cron.porOrdem[serv.ordem] : null;

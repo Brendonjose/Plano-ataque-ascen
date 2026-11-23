@@ -6,7 +6,10 @@
 set -euo pipefail
 
 DIR_REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-DESTINO=/opt/plano-ataque
+DESTINO="${PA_DESTINO:-/opt/plano-ataque}"
+# shellcheck source=lib.sh
+source "$DIR_REPO/servidor/lib.sh"
+TROCAR_SENHA=0
 USUARIO=pocketbase
 DOMINIO="" ; ADMIN_EMAIL="" ; ADMIN_SENHA="" ; SIMULAR=0
 
@@ -17,16 +20,20 @@ while [[ $# -gt 0 ]]; do
     --admin-email) ADMIN_EMAIL="${2:-}"; shift 2 ;;
     --admin-senha) ADMIN_SENHA="${2:-}"; shift 2 ;;
     --simular) SIMULAR=1; shift ;;
+    --trocar-senha-painel) TROCAR_SENHA=1; shift ;;
     -h|--help) uso; exit 0 ;;
     *) echo "Opção desconhecida: $1"; uso; exit 2 ;;
   esac
 done
 if [[ -z "$DOMINIO" || -z "$ADMIN_EMAIL" ]]; then uso; exit 2; fi
 if [[ ! "$DOMINIO" =~ ^[a-z0-9.-]+$ ]]; then echo "Domínio inválido: $DOMINIO"; exit 2; fi
-if [[ -z "$ADMIN_SENHA" && $SIMULAR -eq 0 ]]; then
+# Já instalado: não pede nem troca a senha (evita trocar sem querer por erro de digitação).
+JA_INSTALADO=0
+if [[ -f "$DESTINO/pb_data/.admin_criado" && $TROCAR_SENHA -eq 0 ]]; then JA_INSTALADO=1; fi
+if [[ $JA_INSTALADO -eq 0 && -z "$ADMIN_SENHA" && $SIMULAR -eq 0 ]]; then
   read -r -s -p "Senha do administrador (mínimo 12 caracteres): " ADMIN_SENHA; echo
 fi
-if [[ $SIMULAR -eq 0 || -n "$ADMIN_SENHA" ]] && [[ ${#ADMIN_SENHA} -lt 12 ]]; then
+if [[ $JA_INSTALADO -eq 0 ]] && [[ $SIMULAR -eq 0 || -n "$ADMIN_SENHA" ]] && [[ ${#ADMIN_SENHA} -lt 12 ]]; then
   echo "A senha do administrador precisa ter pelo menos 12 caracteres."; exit 2
 fi
 
@@ -78,13 +85,17 @@ passo 7 "Backup automático diário (3h, guarda 7 cópias em $DESTINO/pb_data/ba
 echo "      (configurado pela migração 1700000003_backups.js)"
 
 passo 8 "Criar o superusuário e o primeiro administrador do sistema ($ADMIN_EMAIL)"
-if [[ $SIMULAR -eq 1 ]]; then
+if [[ $JA_INSTALADO -eq 1 ]]; then
+  echo "      Já instalado: a senha do painel técnico e o administrador não foram alterados."
+  echo "      (para trocar a senha do painel, rode de novo com --trocar-senha-painel)"
+  if [[ $SIMULAR -eq 0 ]]; then esperar_https "https://$DOMINIO" 60 2 || exit 3; fi
+elif [[ $SIMULAR -eq 1 ]]; then
   echo "      (simulação) pocketbase superuser upsert $ADMIN_EMAIL ********"
   echo "      (simulação) criar usuário admin $ADMIN_EMAIL no sistema"
 else
   sudo -u "$USUARIO" "$DESTINO/pocketbase" superuser upsert "$ADMIN_EMAIL" "$ADMIN_SENHA" "${ARGS[@]}" >/dev/null
   # Espera o servidor responder (o certificado HTTPS pode levar alguns segundos na primeira vez).
-  for _ in $(seq 1 60); do curl -fsS "https://$DOMINIO/api/health" >/dev/null 2>&1 && break; sleep 2; done
+  esperar_https "https://$DOMINIO" 60 2 || exit 3
   TOKEN=$(curl -fsS -X POST "https://$DOMINIO/api/collections/_superusers/auth-with-password" \
     -H 'Content-Type: application/json' --data-binary @- <<<"{\"identity\":\"$ADMIN_EMAIL\",\"password\":\"$ADMIN_SENHA\"}" | sed -E 's/.*"token":"([^"]+)".*/\1/')
   EXISTE=$(curl -fsS -G "https://$DOMINIO/api/collections/users/records" -H "Authorization: $TOKEN" --data-urlencode "filter=email='$ADMIN_EMAIL'" | grep -c '"totalItems":0' || true)
@@ -94,6 +105,7 @@ else
   else
     echo "      Administrador já existia (nada mudou)."
   fi
+  sudo -u "$USUARIO" touch "$DESTINO/pb_data/.admin_criado"
 fi
 
 echo

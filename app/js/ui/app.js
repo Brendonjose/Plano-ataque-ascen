@@ -206,7 +206,7 @@
       h('div.espaco'),
       h('div.linha.acoes-topo',
         h('button.btn.peq', { onclick: desfazer, disabled: !podeDesfazer, title: podeDesfazer ? 'Desfazer: ' + PA.acoes.ultimoRotulo(ctx.estado) : 'Nada para desfazer' }, icone('desfazer'), 'Desfazer'),
-        h('button.btn.peq', { onclick: salvarBackup, title: 'Baixar backup (.json)' }, icone('baixar'), 'Backup'),
+        pode('config') ? h('button.btn.peq', { onclick: salvarBackup, title: 'Baixar backup (.json)' }, icone('baixar'), 'Backup') : null,
         h('button.btn.peq', { onclick: () => { tema(true); desenhar(); }, title: 'Tema claro/escuro', 'aria-label': 'Alternar tema' }, icone(document.documentElement.getAttribute('data-tema') === 'escuro' ? 'sol' : 'lua')),
         servidor() ? h('button.btn.peq', { onclick: sair, title: 'Sair (' + ctx.usuario.nome + ')' }, 'Sair') : null));
     const faixas = [];

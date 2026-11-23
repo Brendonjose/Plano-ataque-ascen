@@ -19,6 +19,13 @@
         : select([['', 'Escolha…'], ...unicas.map(x => [x, x.trim()])], f.empreiteira || '', v => set('empreiteira', v))),
       h('div.campo', 'Prumadas', h('div.linha', { style: { gap: '10px' } }, [1, 2, 3, 4].map(n => h('label.linha.peq', { style: { gap: '4px' } },
         h('input', { type: 'checkbox', checked: f.prumadas.includes(n), onchange: e => set('prumadas', e.target.checked ? [...f.prumadas, n].sort() : f.prumadas.filter(x => x !== n)) }), 'Final ' + n)))),
+      f.empreiteira ? (() => {
+        const todos = PA.motor.relatorio(ctx.estado, ctx.resultado, { empreiteira: f.empreiteira, prumadas: [1, 2, 3, 4], incluirExecutados: true }).cabecalho.servicos;
+        if (todos.length < 2) return null;
+        const marcados = f.servicos && f.servicos.length ? f.servicos : todos.map(s => PA.modelo.POR_ORDEM[s.ordem].id);
+        return h('div.campo', 'Serviços', h('div.linha', { style: { gap: '10px' } }, todos.map(s => { const id = PA.modelo.POR_ORDEM[s.ordem].id; return h('label.linha.peq', { style: { gap: '4px' } },
+          h('input', { type: 'checkbox', checked: marcados.includes(id), onchange: e => { const n = e.target.checked ? [...marcados, id] : marcados.filter(x => x !== id); set('servicos', n.length ? n : null); } }), s.nome); })));
+      })() : null,
       h('label.linha.peq', { style: { gap: '6px' } }, h('input', { type: 'checkbox', checked: !!f.incluirExecutados, onchange: e => set('incluirExecutados', e.target.checked) }), 'Incluir aptos já executados'),
       h('div.espaco', { style: { flex: 1 } }),
       f.empreiteira ? h('button.btn', { onclick: () => window.print() }, icone('imprimir'), 'Imprimir / PDF') : null,
@@ -32,6 +39,7 @@
     if (!f.prumadas.length) { el.appendChild(h('div.cartao', h('p.mudo', 'Marque pelo menos uma prumada.'))); return; }
     const r = PA.motor.relatorio(ctx.estado, ctx.resultado, f);
     const c = r.cabecalho;
+    const variosServ = c.servicos.length > 1;
     const folha = h('div.cartao.relatorio-folha',
       h('div.rel-cab', h('img', { src: 'img/logo_ASCEN.png', alt: 'ASCEN' }),
         h('div', h('h2', { style: { margin: 0 } }, c.empreiteira), h('div.mudo.peq', 'Edifício Ventisette · ' + c.prumadas.map(n => 'Final ' + n).join(', ') + ' · emitido em ' + fmt.data(c.emitidoEm)))),
@@ -41,8 +49,8 @@
           h('td', fmt.dataOu(s.termino, 'concluído')), h('td', folgaEl(s.folga)), h('td', fmt.num(s.equipe) + ' → ' + fmt.num(s.necessaria)))))))
         : h('p.mudo', 'Nenhum serviço desta empreiteira nas prumadas escolhidas.'),
       r.linhas.length ? h('div.tabela-wrap', h('table.tab.rel-linhas',
-        h('thead', h('tr', ['Apto', 'Pav', 'Final', 'Serviço', 'Situação', 'Precisa estar pronto', 'Previsto no ritmo atual', 'Data-limite', 'Pend.'].map(t => h('th', t)))),
-        h('tbody', r.linhas.map(l => h('tr', h('td', h('b', l.apto)), h('td', l.pav), h('td', l.final), h('td', l.servico),
+        h('thead', h('tr', ['Apto', 'Pav', 'Final', variosServ ? 'Serviço' : null, 'Situação', 'Precisa estar pronto', 'Previsto no ritmo atual', 'Data-limite', 'Pend.'].filter(Boolean).map(t => h('th', t)))),
+        h('tbody', r.linhas.map(l => h('tr', h('td', h('b', l.apto)), h('td', l.pav), h('td', l.final), variosServ ? h('td', l.servico) : null,
           h('td', h('span.pill.' + ({ 'Executado': 'ok', 'Em execução': 'and', 'Liberado': 'lib', 'Bloqueado': 'blq' }[l.situacao] || 'blq'), l.situacao), l.atrasado ? h('span.neg.peq', ' atrasado') : null),
           h('td', h('b', fmt.dataOu(l.dataNecessaria))), h('td', typeof l.previsto === 'number' && typeof l.dataNecessaria === 'number' && l.previsto > l.dataNecessaria ? h('span.neg', fmt.data(l.previsto)) : fmt.dataOu(l.previsto)),
           h('td', fmt.data(l.limite)), h('td', l.pendencias ? '⚠ ' + l.pendencias : ''))))))

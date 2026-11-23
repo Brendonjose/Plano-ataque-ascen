@@ -29,6 +29,15 @@
       const exec = d.filter(i => i.status === 'Concluído').length;
       const termos = prum.map(f => L.term[f]).filter(isNum), folgas = prum.map(f => L.folga[f]).filter(isNum), limites = prum.map(f => L.limite[f]);
       const mos = prum.map(f => L.mo[f]);
+      // Piso: cada empresa tem a própria equipe e o próprio término (cota DS × Juninho).
+      const P = estado.piso.empreiteiras;
+      const propria = o === 1 ? (low(P.ds) === emp ? 'ds' : (low(P.jun) === emp ? 'jun' : null)) : null;
+      if (propria) {
+        const termino = propria === 'ds' ? res.cron.piso.finalDS : res.cron.piso.finalJun;
+        const limite = Math.max(...limites);
+        return { ordem: o, nome: L.servico, executado: exec, total: d.length, pct: d.length ? exec / d.length : 0, limite, termino,
+          folga: isNum(termino) ? limite - termino : null, equipe: propria === 'ds' ? estado.piso.equipeDS : estado.piso.equipeJun, necessaria: null };
+      }
       return {
         ordem: o, nome: L.servico, executado: exec, total: d.length, pct: d.length ? exec / d.length : 0,
         limite: Math.max(...limites), termino: termos.length ? Math.max(...termos) : null, folga: folgas.length ? Math.min(...folgas) : null,
@@ -46,4 +55,5 @@
     return { cabecalho: { empreiteira: nome, servicos, prumadas: prum, emitidoEm: PA.datas.hojeSerial(), calculadoEm: res.hoje }, linhas };
   }
   PA.motor.relatorio = relatorio;
+  PA.motor.daEmpreiteira = daEmpreiteira;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

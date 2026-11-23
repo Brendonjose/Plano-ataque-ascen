@@ -26,7 +26,7 @@
   function render(el, ctx) {
     const f = lerFiltros(ctx);
     const set = (k, v) => { const n = Object.assign({}, f); if (v === '' || v === null) delete n[k]; else n[k] = v; gravar(n); PA.ui.desenhar(); };
-    const A = PA.motor.acompanhamento(ctx.resultado, f);
+    const A = PA.motor.acompanhamento(ctx.resultado, f, ctx.estado);
     const { unicas } = PA.motor.empreiteiras(ctx.estado, ctx.resultado.cron);
     const pavs = []; for (let p = 27; p >= 1; p--) pavs.push([p, p + 'º']);
     const campo = (r, e) => h('label.campo', r, e);
@@ -35,7 +35,8 @@
       campo('Prumada', select([['', '(Todas)'], 'Final 1', 'Final 2', 'Final 3', 'Final 4', 'Finais 1-2', 'Finais 3-4'], f.prumada || '', v => set('prumada', v))),
       campo('Empreiteira', select([['', '(Todas)'], ['A definir', 'A definir'], ...unicas.map(u => [u, u.trim()])], f.empreiteira || '', v => set('empreiteira', v))),
       campo('Pavimento', select([['', '(Todos)'], ...pavs], f.pavimento || '', v => set('pavimento', v ? Number(v) : null))),
-      Object.keys(f).length ? h('button.btn.peq', { onclick: () => { gravar({}); PA.ui.desenhar(); } }, 'Limpar filtros') : null)));
+      Object.keys(f).length ? h('button.btn.peq', { onclick: () => { gravar({}); PA.ui.desenhar(); } }, 'Limpar filtros') : null,
+      ctx.usuario && ctx.usuario.papel === 'empreiteira' ? h('button.btn.prim', { style: { marginLeft: 'auto' }, onclick: () => { location.hash = '#relatorios'; } }, PA.ui.icone('imprimir'), 'Meu relatório') : null)));
     const n = A.numeros;
     const k = (cls, r, v, s) => h('div.kpi.' + cls, h('div.r', r), h('div.v', v), h('div.s', s || ''));
     el.appendChild(h('div.kpis', k('navy', 'Total', n.total, 'serviço × apto'), k('ok', 'Executado', n.executado, fmt.pct(n.pct) + ' do escopo'),
