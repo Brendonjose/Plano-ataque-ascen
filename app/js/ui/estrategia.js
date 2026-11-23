@@ -6,7 +6,7 @@
   const M = PA.modelo;
   function mudar(ctx, rotulo, fn) { PA.ui.aplicar(PA.acoes.alterar(ctx.estado, rotulo, fn), { msg: rotulo }); }
 
-  function render(el, ctx) {
+  let render = function (el, ctx) {
     const E = ctx.estado.estrategia, R = ctx.resultado.estrategia;
     const g = h('div.grade-aptos', { style: { maxWidth: '520px' } }, h('div.cab', 'Pav.'), [1, 2, 3, 4].map(f => h('div.cab', 'Final ' + f)));
     for (let pav = 27; pav >= 1; pav--) {
@@ -15,6 +15,7 @@
         if (pav > 20 && f > 2) { g.appendChild(h('div.vazio-celula')); continue; }
         const a = pav * 10 + f, v = E.vendido[a] === 'V';
         g.appendChild(h('button.celula.' + (v ? 'ok' : 'blq'), { 'data-apto': a, title: v ? 'Vendido — clique para marcar como não vendido' : 'Não vendido — clique para marcar como vendido',
+          disabled: !PA.ui.pode('parametros'),
           onclick: () => mudar(ctx, `Apto ${a}: ${v ? 'não vendido' : 'vendido'}`, e => { e.estrategia.vendido[a] = v ? 'N' : 'V'; }) },
           String(a), h('small', v ? 'V' : ((E.rotulo || {})[a] || 'N'))));
       }
@@ -44,5 +45,7 @@
       h('div.cartao', h('h2', 'Apartamentos vendidos', h('small', `${R.vendidos} vendidos · ${R.naoVendidos} não vendidos · ${R.total} aptos`)), g,
         h('div.legenda', { style: { marginTop: '12px' } }, h('span', h('i', { style: { background: 'var(--ok)' } }), 'Vendido (V)'), h('span', h('i', { style: { background: 'var(--blq-bg)' } }), 'Não vendido (N)')))));
   }
-  PA.ui.registrarTela('estrategia', { titulo: 'Estratégia de ataque', menu: 'Estratégia', icone: 'estrategia', render });
+  const renderOriginal = render;
+  render = function (el, ctx) { renderOriginal(el, ctx); if (!PA.ui.pode('parametros')) el.querySelectorAll('select').forEach(s => { s.disabled = true; }); };
+  PA.ui.registrarTela('estrategia', { titulo: 'Estratégia de ataque', menu: 'Estratégia', icone: 'estrategia', perfis: ['admin', 'obra', 'diretoria'], render });
 })(typeof globalThis !== 'undefined' ? globalThis : this);

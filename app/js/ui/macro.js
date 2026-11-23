@@ -37,6 +37,8 @@
       [h('button.btn', { onclick: () => m.fechar() }, 'Cancelar'), h('button.btn.prim', { onclick: salvar }, 'Salvar')]);
   }
 
+  // Empreiteira não vê a lista de vendidos (informação comercial).
+  const semVendido = () => PA.ui.ctx.usuario && PA.ui.ctx.usuario.papel === 'empreiteira';
   function quadro(ctx, final, modo) {
     const q = PA.motor.quadro(ctx.estado, ctx.resultado, final, modo);
     const cel = c => {
@@ -49,12 +51,12 @@
       h('h2', 'Quadro — Final ' + final, h('small', modo === 'necessario' ? 'Necessário: data máxima para cada apto terminar a etapa a tempo' : 'Cenário atual: projeção com as equipes de hoje')),
       h('div.quadro-wrap', h('table.quadro',
         h('thead',
-          h('tr', h('th.fix', 'Data-limite'), h('th'), q.colunas.map(c => h('th', c.manual ? '' : fmt.curta(c.limite))), h('th')),
-          h('tr', h('th.fix', modo === 'necessario' ? 'Término necessário' : 'Término previsto'), h('th'), q.colunas.map(c => h('th', c.manual ? '' : fmt.dataOu(c.termino === 'ok' ? 'ok' : c.termino).slice(0, 5))), h('th')),
-          h('tr', h('th.fix', '% concluído'), h('th'), q.colunas.map(c => h('th', c.manual ? '' : fmt.pct(c.pct))), h('th')),
-          h('tr', h('th.fix', 'Apto'), h('th', 'Vendido?'), q.colunas.map(c => h('th', { style: c.manual ? { background: '#FFF4D6', color: '#6B4E00' } : {} }, c.col)), h('th', 'Pend.'))),
-        h('tbody', q.linhas.map(l => h('tr', h('td.fix', l.apto), h('td', l.vendido),
-          l.celulas.map((c, j) => c.manual ? h('td.man', { title: 'Clique para editar', onclick: () => editarManual(ctx, l.apto, q.colunas[j].col, c.valor) }, c.valor) : cel(c)),
+          h('tr', h('th.fix', 'Data-limite'), semVendido() ? null : h('th'), q.colunas.map(c => h('th', c.manual ? '' : fmt.curta(c.limite))), h('th')),
+          h('tr', h('th.fix', modo === 'necessario' ? 'Término necessário' : 'Término previsto'), semVendido() ? null : h('th'), q.colunas.map(c => h('th', c.manual ? '' : fmt.dataOu(c.termino === 'ok' ? 'ok' : c.termino).slice(0, 5))), h('th')),
+          h('tr', h('th.fix', '% concluído'), semVendido() ? null : h('th'), q.colunas.map(c => h('th', c.manual ? '' : fmt.pct(c.pct))), h('th')),
+          h('tr', h('th.fix', 'Apto'), semVendido() ? null : h('th', 'Vendido?'), q.colunas.map(c => h('th', { style: c.manual ? { background: '#FFF4D6', color: '#6B4E00' } : {} }, c.col)), h('th', 'Pend.'))),
+        h('tbody', q.linhas.map(l => h('tr', h('td.fix', l.apto), semVendido() ? null : h('td', l.vendido),
+          l.celulas.map((c, j) => c.manual ? h('td.man', PA.ui.pode('lancar') ? { title: 'Clique para editar', onclick: () => editarManual(ctx, l.apto, q.colunas[j].col, c.valor) } : {}, c.valor) : cel(c)),
           h('td', l.pendAbertas || '')))))),
       h('p.mudo.peq', { style: { marginTop: '10px' } }, 'ok = concluído · data = término · — = fora do escopo · vermelho = depois da data-limite · colunas amarelas são manuais (clique para editar).'));
   }

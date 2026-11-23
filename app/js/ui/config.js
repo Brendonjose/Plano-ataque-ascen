@@ -66,5 +66,5 @@
   function render(el, ctx) {
     el.appendChild(h('div.pilha', h('div.grade-cartoes.g2', dados(ctx), parametros(ctx)), h('div.grade-cartoes.g2', empreiteiras(ctx), feriados(ctx))));
   }
-  PA.ui.registrarTela('config', { titulo: 'Configurações e dados', menu: 'Config.', icone: 'config', render });
+  PA.ui.registrarTela('config', { titulo: 'Configurações e dados', menu: 'Config.', icone: 'config', perfis: ['admin'], render });
 })(typeof globalThis !== 'undefined' ? globalThis : this);

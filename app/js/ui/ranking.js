@@ -27,5 +27,5 @@
     PA.ui.graficos.limpar();
     requestAnimationFrame(() => PA.ui.graficos.pctBarras(cv, R.ordenado.map(t => t.empreiteira.trim()), R.ordenado.map(t => t.pontuacao), 'Pontuação', true));
   }
-  PA.ui.registrarTela('ranking', { titulo: 'Ranking das empreiteiras', menu: 'Ranking', icone: 'ranking', render });
+  PA.ui.registrarTela('ranking', { titulo: 'Ranking das empreiteiras', menu: 'Ranking', icone: 'ranking', perfis: ['admin', 'obra', 'diretoria'], render });
 })(typeof globalThis !== 'undefined' ? globalThis : this);

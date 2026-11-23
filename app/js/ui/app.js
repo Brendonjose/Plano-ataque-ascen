@@ -153,9 +153,21 @@
     return t;
   }
 
+  /** A tela aparece para este usuário? (perfis = papéis que veem; servidor = só no modo multiusuário) */
+  function visivel(t) {
+    if (t.servidor && !servidor()) return false;
+    if (!t.perfis) return true;
+    return t.perfis.includes(ctx.usuario ? ctx.usuario.papel : 'admin');
+  }
+  function telaInicial() {
+    const p = ctx.usuario ? ctx.usuario.papel : 'admin';
+    const pref = p === 'empreiteira' ? 'acompanhamento' : (p === 'diretoria' ? 'painel' : 'lancar');
+    return TELAS.find(t => t.id === pref && visivel(t)) || TELAS.find(visivel);
+  }
   function telaAtual() {
-    const id = (location.hash || '#lancar').slice(1).split('?')[0];
-    return TELAS.find(t => t.id === id) || TELAS[0];
+    const id = (location.hash || '').slice(1).split('?')[0];
+    const t = TELAS.find(x => x.id === id);
+    return t && visivel(t) ? t : telaInicial();
   }
 
   /** Posição do campo com foco, para devolver o foco depois de redesenhar. */
@@ -174,7 +186,7 @@
     if (servidor() && ctx.estado && vazio(ctx.estado)) { raiz.appendChild(servidorVazio()); return; }
     if (!ctx.estado) { raiz.appendChild(boasVindas()); return; }
     const tela = telaAtual();
-    const nav = h('nav', { 'aria-label': 'Telas' }, TELAS.map(t => h('a' + (t === tela ? '.ativo' : ''), { href: '#' + t.id, title: t.titulo }, icone(t.icone), h('span', t.menu || t.titulo))));
+    const nav = h('nav', { 'aria-label': 'Telas' }, TELAS.filter(visivel).map(t => h('a' + (t === tela ? '.ativo' : ''), { href: '#' + t.id, title: t.titulo }, icone(t.icone), h('span', t.menu || t.titulo))));
     const lateral = h('aside.lateral', h('div.marca', h('img', { src: 'img/logo_ASCEN.png', alt: 'ASCEN' }), h('span', 'Ventisette · Plano de Ataque')), nav,
       h('div.rodape', servidor() ? ['Dados no servidor', h('br'), ctx.usuario.nome + ' · ' + ctx.usuario.papel] : ['Dados neste computador', h('br'), ctx.estado.meta.origem ? 'Origem: ' + ctx.estado.meta.origem : '']));
     const podeDesfazer = (ctx.estado.meta.pilhaDesfazer || []).length > 0;
@@ -285,7 +297,7 @@
       }, 300);
     }).catch(() => { /* tempo real indisponível: segue sem */ });
     ctx.fila.processar();
-    if (u.papel === 'empreiteira' && !location.hash && PA.ui.TELAS.some(t => t.id === 'acompanhamento')) location.hash = '#acompanhamento';
+    if (!location.hash) { const t = telaInicial(); if (t) history.replaceState(null, '', '#' + t.id); desenhar(); }
   }
   function sair() {
     if (ctx.fila && ctx.fila.pendentes() && !confirm('Há lançamentos ainda não enviados. Se sair agora, eles ficam guardados neste aparelho e serão enviados no próximo login. Sair mesmo assim?')) return;
@@ -331,5 +343,5 @@
     desenhar();
   }
 
-  Object.assign(PA.ui, { pode, registrarTela, ctx, aplicar, desfazer, desenhar, recalcular, importarPlanilha, restaurarBackup, salvarBackup, exportarExcel, definirConferencia, iniciar, TELAS });
+  Object.assign(PA.ui, { pode, servidor, visivel, registrarTela, ctx, aplicar, desfazer, desenhar, recalcular, importarPlanilha, restaurarBackup, salvarBackup, exportarExcel, definirConferencia, iniciar, TELAS });
 })(typeof globalThis !== 'undefined' ? globalThis : this);

@@ -16,7 +16,7 @@
       h('div.linha', { style: { gap: '16px' } },
         h('div.kpi.teal', { style: { minWidth: '200px' } }, h('div.r', '% realizado hoje'), h('div.v', fmt.pct(H.pctHoje, 1)), h('div.s', H.concluidosHoje + ' de ' + H.itensValidos + ' itens válidos')),
         h('div.kpi', { style: { minWidth: '200px' } }, h('div.r', '% previsto na semana'), h('div.v', atual ? fmt.pct(atual.previsto, 1) : '—'), h('div.s', atual ? 'semana ' + atual.semana + ' · ' + fmt.data(atual.data) : 'antes da data-base')),
-        h('div', h('button.btn.teal', { onclick: () => PA.ui.aplicar(PA.acoes.registrarSemana(ctx.estado, ctx.resultado, PA.datas.hojeSerial()), { msg: 'Semana registrada' }), disabled: !atual || !!ctx.conferencia, title: ctx.conferencia ? 'Desligue a data de conferência para registrar' : '' }, icone('check'), 'Registrar semana ' + (atual ? atual.semana : '')),
+        h('div', h('button.btn.teal', { onclick: () => PA.ui.aplicar(PA.acoes.registrarSemana(ctx.estado, ctx.resultado, PA.datas.hojeSerial()), { msg: 'Semana registrada' }), disabled: !atual || !!ctx.conferencia || !PA.ui.pode('semana'), title: ctx.conferencia ? 'Desligue a data de conferência para registrar' : '' }, icone('check'), 'Registrar semana ' + (atual ? atual.semana : '')),
           h('div.mudo.peq', { style: { marginTop: '6px' } }, 'Grava o % de hoje na semana atual. Faça uma vez por semana (ex.: toda segunda).'))),
       h('div.grade-cartoes.g2',
         h('div.cartao', h('h2', 'Evolução semanal: previsto × realizado'), h('div.graf.alto', cv)),
@@ -28,6 +28,7 @@
               onchange: e => mudar(s.semana, 'realizado', e.target.value === '' ? null : Number(e.target.value) / 100) }), ' %'),
             h('td.num', fmt.num(s.concluidos)),
             h('td', h('input', { value: s.obs, style: { width: '220px' }, onchange: e => mudar(s.semana, 'obs', e.target.value.trim()) })))))))))));
+    if (!PA.ui.pode('semana')) el.querySelectorAll('table input').forEach(i => { i.disabled = true; });
     PA.ui.graficos.limpar();
     requestAnimationFrame(() => PA.ui.graficos.evolucao(cv, H.semanas, ctx.hoje));
   }

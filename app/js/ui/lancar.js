@@ -194,6 +194,6 @@
     el.appendChild(h('div.lancar-layout', h('div.cartao', barraSel, grade(ctx, servicoId), h('div', { style: { marginTop: '14px' } }, legenda())), resumoServico(ctx, servicoId)));
   }
 
-  PA.ui.registrarTela('lancar', { titulo: 'Lançar avanço', menu: 'Lançar', icone: 'lancar', render });
+  PA.ui.registrarTela('lancar', { titulo: 'Lançar avanço', menu: 'Lançar', icone: 'lancar', perfis: ['admin', 'obra'], render });
   PA.ui.abrirLancamento = abrirLancamento;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

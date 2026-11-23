@@ -44,10 +44,10 @@
       h('div.tabela-wrap', h('table.tab',
         h('thead', h('tr', ['Empreiteira', 'Equipe', 'Produtiv. piso (m²/func/dia)', 'Produtiv. azulejo', 'Aptos a executar', 'Dias previstos', 'Término'].map(t => h('th', t)))),
         h('tbody',
-          h('tr', h('td', h('b', P.empreiteiras.ds)), h('td', numIn(P.equipeDS, v => set('Equipe ' + P.empreiteiras.ds, p => { p.equipeDS = v || 0; }))),
+          h('tr', h('td', h('b', P.empreiteiras.ds)), h('td', numIn(P.equipeDS, v => set('Equipe ' + P.empreiteiras.ds, p => { p.equipeDS = v || 0; }), { 'data-equipe': '1' })),
             h('td', numIn(P.prodDS.piso, v => set('Produtividade piso DS', p => { p.prodDS.piso = v; }), { positivo: true })), h('td', numIn(P.prodDS.azulejo, v => set('Produtividade azulejo DS', p => { p.prodDS.azulejo = v; }), { positivo: true })),
             h('td', k.faltaDS), h('td', fmt.num(k.diasDS)), h('td', fmt.dataOu(k.finalDS))),
-          h('tr', h('td', h('b', P.empreiteiras.jun)), h('td', numIn(P.equipeJun, v => set('Equipe ' + P.empreiteiras.jun, p => { p.equipeJun = v || 0; }))),
+          h('tr', h('td', h('b', P.empreiteiras.jun)), h('td', numIn(P.equipeJun, v => set('Equipe ' + P.empreiteiras.jun, p => { p.equipeJun = v || 0; }), { 'data-equipe': '1' })),
             h('td', numIn(P.prodJun.piso, v => set('Produtividade piso Juninho', p => { p.prodJun.piso = v; }), { positivo: true })), h('td', numIn(P.prodJun.azulejo, v => set('Produtividade azulejo Juninho', p => { p.prodJun.azulejo = v; }), { positivo: true })),
             h('td', k.faltaJun), h('td', fmt.num(k.diasJun)), h('td', fmt.dataOu(k.finalJun)))))),
       h('div.linha', { style: { marginTop: '10px', gap: '18px' } },
@@ -75,7 +75,7 @@
             h('td', numIn(L.prazo, set(s.id, 'prazo', 'Prazo ' + L.servico), { style: { width: '60px' } })),
             h('td', piso ? fmt.num(L.unid) : numIn(sv(s.id).unid, set(s.id, 'unid', 'Unidades ' + L.servico), { positivo: true })),
             h('td', piso ? fmt.num(L.prod) : numIn(sv(s.id).produtividade, set(s.id, 'produtividade', 'Produtividade ' + L.servico), { positivo: true })),
-            h('td', piso ? h('span', fmt.num(L.equipe), h('div.mudo.peq', 'ver bloco do piso')) : numIn(sv(s.id).equipe, set(s.id, 'equipe', 'Equipe ' + L.servico), { style: { width: '60px' } })),
+            h('td', piso ? h('span', fmt.num(L.equipe), h('div.mudo.peq', 'ver bloco do piso')) : numIn(sv(s.id).equipe, set(s.id, 'equipe', 'Equipe ' + L.servico), { style: { width: '60px' }, 'data-equipe': '1' })),
             h('td.num', fmt.num(Math.round(L.ritmo * 100) / 100)),
             FIN.map(f => h('td', fmt.curta(L.limite[f]))),
             h('td.num', pend), h('td', fmt.dataOu(L.termTodas, 'concluído')), h('td.num', folgaEl(L.piorFolga)),
@@ -95,8 +95,14 @@
           FIN.map(f => [h('td', fmt.dataOu(L.term[f], 'ok')), h('td.num', folgaEl(L.folga[f])), h('td.num', fmt.num(L.mo[f]))])))))));
   }
 
+  /** Só leitura para quem não altera parâmetros; o campo Equipe fica liberado para a obra. */
+  function travar(el) {
+    const p = PA.ui.pode('parametros'), q = PA.ui.pode('equipe');
+    el.querySelectorAll('input, select, textarea').forEach(i => { if (i.hasAttribute('data-equipe') ? !q : !p) i.disabled = true; });
+  }
   function render(el, ctx) {
     el.appendChild(h('div.pilha', h('div.grade-cartoes', { style: { gridTemplateColumns: 'minmax(0, 520px) minmax(0, 1fr)' } }, metas(ctx), piso(ctx)), tabelaServicos(ctx), porPrumada(ctx)));
+    travar(el);
   }
   PA.ui.registrarTela('cronograma', { titulo: 'Cronograma e simulação', menu: 'Cronograma', icone: 'cronograma', render });
 })(typeof globalThis !== 'undefined' ? globalThis : this);
