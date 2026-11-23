@@ -24,6 +24,7 @@ migrate((app) => {
   users.fields.add(new SelectField({ name: 'papel', required: true, maxSelect: 1, values: ['admin', 'obra', 'diretoria', 'empreiteira'] }));
   users.fields.add(new TextField({ name: 'empreiteira', max: 120 }));
   users.fields.add(new BoolField({ name: 'ativo' }));
+  users.authRule = 'ativo = true'; // usuário desativado não entra nem renova a sessão
   users.listRule = ATIVO;
   users.viewRule = ATIVO;
   users.createRule = ADMIN;
@@ -48,6 +49,7 @@ migrate((app) => {
 
   app.save(base('pendencias', [
     { type: 'text', name: 'uid', required: true, max: 40 },
+    { type: 'number', name: 'ordem' },
     { type: 'number', name: 'apto', onlyInt: true },
     { type: 'text', name: 'etapa', max: 80 },
     { type: 'text', name: 'descricao', max: 2000 },
@@ -65,12 +67,10 @@ migrate((app) => {
     { type: 'text', name: 'valor', max: 200 }
   ], ['CREATE UNIQUE INDEX idx_manuais ON manuais (apto, etapa)'], EDITA));
 
+  // Semana guardada como objeto (distingue "não registrado" de zero).
   app.save(base('semanas', [
     { type: 'number', name: 'semana', required: true, onlyInt: true },
-    { type: 'number', name: 'data', onlyInt: true },
-    { type: 'number', name: 'realizado' },
-    { type: 'number', name: 'concluidos', onlyInt: true },
-    { type: 'text', name: 'obs', max: 500 }
+    { type: 'json', name: 'dados', maxSize: 5000 }
   ], ['CREATE UNIQUE INDEX idx_semanas ON semanas (semana)'], EDITA));
 
   app.save(base('parametros', [

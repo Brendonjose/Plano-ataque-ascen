@@ -161,7 +161,7 @@
       const apto = val(pend, 'B' + r);
       if (apto === null) continue;
       e.pendencias.push({
-        id: 'p' + (r - 5),
+        id: 'p' + (r - 5), ordem: r - 5,
         apto: num(apto, null),
         etapa: String(val(pend, 'C' + r) || ''),
         descricao: String(val(pend, 'D' + r) || ''),
