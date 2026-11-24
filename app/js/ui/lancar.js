@@ -29,6 +29,15 @@
   /** Folha de lançamento de um apto (ou de vários, no modo seleção). */
   function abrirLancamento(ctx, servicoId, aptos) {
     const s = M.POR_ID[servicoId];
+    if (!PA.ui.pode('lancar')) {
+      // Perfil só de consulta: mostra a situação, sem opções de lançamento.
+      const it = itemDe(ctx.resultado, s.ordem, aptos[0]);
+      const m0 = modal(`Apto ${aptos[0]} · ${s.nome}`, h('div.info-grade',
+        h('div', h('b', 'Situação'), pillStatus(it)), h('div', h('b', 'Detalhe'), it.detalhe),
+        h('div', h('b', 'Data-limite'), fmt.data(it.limite)), h('div', h('b', 'Previsto'), fmt.dataOu(it.terminoPrevisto, it.status === 'Concluído' ? 'concluído' : '—')),
+        h('div', h('b', 'Data necessária'), fmt.dataOu(it.dataNecessaria)), h('div', h('b', 'Empreiteira'), it.empreiteira)));
+      return m0;
+    }
     const res = ctx.resultado;
     const unico = aptos.length === 1;
     const it = unico ? itemDe(res, s.ordem, aptos[0]) : null;
@@ -87,9 +96,10 @@
         const it = itemDe(res, s.ordem, apto);
         const cls = classeItem(it);
         const vendido = ctx.estado.estrategia.vendido[apto] === 'V';
-        const tag = servicoId === 'piso' && it.status === 'Concluído' ? (PA.modelo.norm(it.codigo) === '1' ? 'DS' : 'JN') : (it.obs ? '✎' : '');
+        const nPend = (res.pendencias.abertasPorApto || {})[apto] || 0;
+        const tag = (nPend ? '⚠ ' : '') + (servicoId === 'piso' && it.status === 'Concluído' ? (PA.modelo.norm(it.codigo) === '1' ? 'DS' : 'JN') : (it.obs ? '✎' : ''));
         g.appendChild(h('button.celula.' + cls.split(' ').join('.') + (sel.has(apto) ? '.sel' : ''), {
-          title: `Apto ${apto} · ${rotuloItem(it)}${it.atrasado ? ' · atrasado' : ''} · ${it.detalhe}${vendido ? '' : ' · não vendido'}`,
+          title: `Apto ${apto} · ${rotuloItem(it)}${it.atrasado ? ' · atrasado' : ''} · ${it.detalhe}${vendido ? '' : ' · não vendido'}${nPend ? ' · ' + nPend + ' pendência(s) aberta(s)' : ''}`,
           'data-apto': apto,
           onclick: () => {
             if (ctx.ui.modoSelecao) { if (sel.has(apto)) sel.delete(apto); else sel.add(apto); ctx.ui.selecao = sel; PA.ui.desenhar(); return; }
@@ -185,6 +195,6 @@
     el.appendChild(h('div.lancar-layout', h('div.cartao', barraSel, grade(ctx, servicoId), h('div', { style: { marginTop: '14px' } }, legenda())), resumoServico(ctx, servicoId)));
   }
 
-  PA.ui.registrarTela('lancar', { titulo: 'Lançar avanço', menu: 'Lançar', icone: 'lancar', render });
+  PA.ui.registrarTela('lancar', { titulo: 'Lançar avanço', menu: 'Lançar', icone: 'lancar', perfis: ['admin', 'obra'], render });
   PA.ui.abrirLancamento = abrirLancamento;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

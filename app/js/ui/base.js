@@ -66,7 +66,7 @@
   }
   function modal(titulo, corpo, rodape, opts) {
     const fundo = h('div.fundo-modal', { onclick: e => { if (e.target === fundo) fechar(); } });
-    const fechar = () => { fundo.remove(); document.removeEventListener('keydown', esc); if (opts && opts.aoFechar) opts.aoFechar(); };
+    const fechar = () => { fundo.remove(); document.removeEventListener('keydown', esc); if (opts && opts.aoFechar) opts.aoFechar(); const c = PA.ui.ctx; if (c && c.redesenharAoFechar && !document.querySelector('.fundo-modal')) { c.redesenharAoFechar = false; PA.ui.desenhar(); } };
     const esc = e => { if (e.key === 'Escape') fechar(); };
     document.addEventListener('keydown', esc);
     const m = h('div.modal' + (opts && opts.largo ? '.largo' : ''), { role: 'dialog', 'aria-modal': 'true', 'aria-label': typeof titulo === 'string' ? titulo : '' },

@@ -14,7 +14,7 @@
     // Nada mudou: não cria passo de desfazer.
     const semPilha = o => { const c = Object.assign({}, o, { meta: Object.assign({}, o.meta, { pilhaDesfazer: [] }) }); return JSON.stringify(c); };
     if (semPilha(novo) === semPilha(estado)) return estado;
-    const pilha = (estado.meta.pilhaDesfazer || []).concat([{ rotulo, estado: antes }]);
+    const pilha = (estado.meta.pilhaDesfazer || []).concat([{ rotulo, estado: antes, id: Date.now().toString(36) + Math.random().toString(36).slice(2, 7) }]);
     novo.meta.pilhaDesfazer = pilha.slice(-MAX_DESFAZER);
     return novo;
   }
@@ -94,8 +94,9 @@
   const pendencia = {
     criar(estado, p) {
       return alterar(estado, 'Nova pendência', e => {
-        const n = e.pendencias.reduce((m, x) => Math.max(m, parseInt(String(x.id).slice(1), 10) || 0), 0) + 1;
-        e.pendencias.push({ id: 'p' + n, apto: Number(p.apto), etapa: p.etapa || '', descricao: p.descricao || '', responsavel: p.responsavel || '',
+        // Id único mesmo com várias pessoas criando ao mesmo tempo (vira o uid no servidor).
+        const id = 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+        e.pendencias.push({ id, ordem: Date.now(), apto: Number(p.apto), etapa: p.etapa || '', descricao: p.descricao || '', responsavel: p.responsavel || '',
           abertura: p.abertura ?? null, prazo: p.prazo ?? null, status: p.status || 'Aberta', resolvidaEm: p.resolvidaEm ?? null, obs: p.obs || '' });
       });
     },

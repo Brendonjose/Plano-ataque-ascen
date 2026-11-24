@@ -10,7 +10,8 @@ function carregarFixture() {
 function carregarApp() {
   if (!globalThis.XLSX) globalThis.XLSX = require('xlsx');
   const arquivos = ['datas.js', 'modelo.js', 'importar.js', 'motor/status.js', 'motor/cronograma.js',
-    'motor/datas-apto.js', 'motor/paineis.js', 'motor/calcular.js', 'armazenamento.js', 'acoes.js', 'exportar.js'];
+    'motor/datas-apto.js', 'motor/paineis.js', 'motor/calcular.js', 'armazenamento.js', 'acoes.js', 'exportar.js',
+    'dados/diff.js', 'dados/local.js', 'dados/servidor.js', 'dados/fila.js', 'motor/acompanhamento.js', 'motor/relatorio.js', 'motor/pendencias-painel.js'];
   for (const a of arquivos) {
     const p = path.join(RAIZ, 'app', 'js', a);
     if (fs.existsSync(p)) require(p);

@@ -2,6 +2,29 @@
 
 Sistema para acompanhar os **serviços finais da obra**: datas de finalização, prazos, quem está atrasado ou adiantado, mão de obra necessária e entrega por prumada. Ele substitui o lançamento diário e os painéis da planilha `Plano_de_Ataque_v6.xlsx` e faz **os mesmos cálculos** que ela.
 
+## Versão online (todos acessam)
+
+O sistema também roda num servidor (EC2), com login e perfis:
+
+| Perfil | Pode fazer |
+|---|---|
+| **Administrador** | Tudo: metas, equipes, vendidos, usuários e importação |
+| **Obra** | Lançar, atualizar as equipes e cuidar das pendências |
+| **Diretoria** | Só consulta |
+| **Empreiteira** | Só consulta; entra no Acompanhamento da própria empresa e tira o próprio relatório |
+
+- Os lançamentos aparecem ao vivo para todos.
+- Se a internet cair, ficam guardados no aparelho e são enviados quando ela voltar.
+- Para instalar, siga o [DEPLOY.md](DEPLOY.md). Para manter seguro, siga o [OPERACAO.md](OPERACAO.md).
+
+Telas novas da versão 2:
+- **Acompanhamento:** executado, em execução, liberado e bloqueado por serviço, prumada, empreiteira e pavimento, com a lista dos aptos.
+- **Relatórios:** por empreiteira e prumada, com a data em que cada apto precisa estar pronto. Imprime em PDF ou baixa em Excel.
+- **Pendências no Painel**, com o sinal ⚠ nos aptos que têm pendência aberta.
+- **Usuários, Minha conta e Alterações:** quem mudou o quê e quando.
+
+Aberto direto pelo arquivo `index.html`, o sistema continua funcionando como antes, só neste computador.
+
 ## Como abrir
 
 1. Baixe esta pasta (ou o repositório) para o seu computador.

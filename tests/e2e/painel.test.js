@@ -23,3 +23,17 @@ test('painel: KPIs da v6, filtro Camargo e 7 gráficos', { timeout: 90000 }, asy
     assert.deepStrictEqual(erros, []);
   } finally { await browser.close(); }
 });
+test('pendências no painel e ⚠ na grade de lançar', { timeout: 90000 }, async () => {
+  const { browser, page, erros } = await abrir({ viewport: { width: 1440, height: 900 } });
+  try {
+    await importarV6(page);
+    await page.goto(page.url().split('#')[0] + '#painel');
+    await page.waitForSelector('.bloco-pendencias');
+    const txt = await page.innerText('.bloco-pendencias');
+    assert.ok(txt.includes('203') && txt.includes('RD Santos'), txt.slice(0, 200));
+    await page.goto(page.url().split('#')[0] + '#lancar');
+    await page.click('.servico-chip:has-text("Piso")');
+    assert.ok((await page.innerText('.celula[data-apto="203"]')).includes('⚠'));
+    assert.deepStrictEqual(erros, []);
+  } finally { await browser.close(); }
+});
