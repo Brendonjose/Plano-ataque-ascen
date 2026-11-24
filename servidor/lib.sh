@@ -15,3 +15,10 @@ esperar_https() {
   echo "  Depois rode o instalar.sh de novo (nada se perde)."
   return 3
 }
+
+# carimbar_versao INDEX_HTML VERSAO: acrescenta ?v=VERSAO aos arquivos locais (js, css, config) do index.html,
+# para o navegador baixar tudo de novo depois de cada atualização (sem misturar arquivo novo com antigo do cache).
+carimbar_versao() {
+  local arq="$1" versao="$2"
+  sed -i -E "s#(src|href)=\"((js|css|vendor|img)/[^\"?]+|config\.js)(\?v=[^\"]*)?\"#\1=\"\2?v=${versao}\"#g" "$arq"
+}

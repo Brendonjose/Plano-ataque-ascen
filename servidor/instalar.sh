@@ -53,6 +53,8 @@ rodar bash "$DIR_REPO/servidor/baixar-pocketbase.sh" "$DESTINO"
 passo 3 "Copiar as telas, as migrações e os ganchos"
 rodar rm -rf "$DESTINO/pb_public" "$DESTINO/pb_migrations" "$DESTINO/pb_hooks"
 rodar cp -r "$DIR_REPO/app" "$DESTINO/pb_public"
+VERSAO_APP="$(git -C "$DIR_REPO" rev-parse --short HEAD 2>/dev/null || date +%Y%m%d%H%M)"
+if [[ $SIMULAR -eq 1 ]]; then echo "      (simulação) carimbar a versão $VERSAO_APP no index.html"; else carimbar_versao "$DESTINO/pb_public/index.html" "$VERSAO_APP"; fi
 rodar cp -r "$DIR_REPO/servidor/pb_migrations" "$DESTINO/pb_migrations"
 rodar cp -r "$DIR_REPO/servidor/pb_hooks" "$DESTINO/pb_hooks"
 rodar chown -R "$USUARIO:$USUARIO" "$DESTINO"
