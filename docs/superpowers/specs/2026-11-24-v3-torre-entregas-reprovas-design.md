@@ -54,7 +54,12 @@ Mais adiante, depois de terminar a Ventisette, o sistema deve servir para **outr
    - Lista inicial: Piso, Rejunte, Pintura, Portas, Louças e metais, Limpeza, Caixilhos, Bancadas, Rodapé, Espelhos, Elétrica, Hidráulica, Outros.
    - Cada categoria tem uma **empreiteira responsável** opcional. Por padrão é a empreiteira do serviço correspondente; Elétrica e Hidráulica ficam "a definir", e o admin preenche.
 6. **Cada motivo de reprova vira uma pendência** do apto, com responsável = empreiteira da categoria, etapa = categoria e prazo = nova data da vistoria. Assim o reparo entra no fluxo de pendências que já existe.
-7. **Prévia antes de produção:** as mudanças são feitas numa branch e publicadas como **prévia num link privado** (página no claude.ai, só do Brendon), carregada com os dados da v6. Nada muda na EC2 até o Brendon aprovar. Depois de aprovado: merge na `main` e o comando de atualização do `DEPLOY.md` na EC2.
+7. **"O que define o prazo"** (acrescentado em 24/11/2026, depois que o Brendon mudou equipes e as datas não andaram):
+   - **Cronograma:** cada serviço mostra se o término é definido pela **própria equipe** ou se **aguarda o serviço anterior** (e qual).
+   - **Topo do Cronograma e Torre:** mostram o **gargalo atual da obra**, ou seja, o serviço que, reforçado, antecipa a entrega.
+   - **Mudança de equipe sem efeito na data:** aparece um aviso explicando o motivo.
+   - A conferência de 24/11 confirmou que o motor está certo. A data não andava por causa do encadeamento (regra da v6).
+8. **Prévia antes de produção:** as mudanças são feitas numa branch e publicadas como **prévia num link privado** (página no claude.ai, só do Brendon), carregada com os dados da v6. Nada muda na EC2 até o Brendon aprovar. Depois de aprovado: merge na `main` e o comando de atualização do `DEPLOY.md` na EC2.
 
 **Não objetivos (desta versão)**
 
@@ -66,7 +71,7 @@ Mais adiante, depois de terminar a Ventisette, o sistema deve servir para **outr
 
 - Mudar números ou regras que já existem. O motor e os testes de fidelidade com a v6 continuam iguais.
 - A Torre ficar tão carregada quanto o Painel. Ela é a visão simples: cores, legenda e poucas palavras.
-- Mexer na produção antes da aprovação da prévia.
+- Mexer na produção antes da aprovação da prévia. Ponto de retorno: a branch `backup/v2-estavel`; o roteiro para voltar está no `OPERACAO.md`.
 - Uma reprova não deixar rastro. Todo registro de vistoria fica no histórico de alterações, como os lançamentos.
 
 ## 3. Restrições
