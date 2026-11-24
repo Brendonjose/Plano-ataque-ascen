@@ -237,3 +237,21 @@ table.quadro td.trc { color: var(--canc); }
   tr { page-break-inside: avoid; }
   .rel-cab img { filter: none !important; }
 }
+/* Torre (v3) */
+.torre .celula { min-height: 46px; }
+.torre .celula small { font-size: 10px; line-height: 1.15; text-align: center; }
+.torre .celula.apagada { opacity: .25; }
+.celula.p0 { background: #E8F6F6; border-color: #B9E3E4; color: #0E5E61; }
+.celula.p1 { background: #BFE6E7; border-color: #8FD3D5; color: #0B4F52; }
+.celula.p2 { background: #7FCFD1; border-color: #5BBFC2; color: #083F41; }
+.celula.p3 { background: #3BB3B6; border-color: #2A9FA2; color: #fff; }
+.celula.p4 { background: #178A8E; border-color: #127174; color: #fff; }
+.celula.ent-primeira { background: #1B7F35; border-color: #1B7F35; color: #fff; }
+.celula.ent-apos { background: #A5D6A7; border-color: #7CC47F; color: #14501F; }
+.celula.ent-reprovado { background: #D32F2F; border-color: #D32F2F; color: #fff; }
+.celula.ent-agendada { background: #DCE9FB; border-color: #2a78d6; color: #174A8B; }
+.celula.ent-sem { background: #E3F2E5; border-color: #9CCB9F; color: #2E7D32; }
+:root[data-tema="escuro"] .celula.p0 { background: #12302F; color: #9FDDDF; } :root[data-tema="escuro"] .celula.p1 { background: #155052; color: #CFF1F2; }
+:root[data-tema="escuro"] .celula.ent-agendada { background: #1B2E4F; color: #9EC4F5; } :root[data-tema="escuro"] .celula.ent-sem { background: #173A24; color: #8FD39A; }
+:root[data-tema="escuro"] .celula.ent-apos { background: #2E5E33; color: #D6F2D8; }
+.btn.opcao-ok { border-color: var(--ok); color: var(--ok); font-weight: 700; } .btn.opcao-rep { border-color: var(--late); color: var(--late); font-weight: 700; }
