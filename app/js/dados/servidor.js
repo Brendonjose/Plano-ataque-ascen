@@ -154,7 +154,7 @@
 
     async function importarTudo(estado) {
       const ops = PA.dados.diff(PA.modelo.estadoVazio(), estado);
-      const corpo = { origem: estado.meta && estado.meta.origem || '', lancamentos: [], equipes: [], pendencias: [], manuais: [], semanas: [], parametros: [] };
+      const corpo = { origem: estado.meta && estado.meta.origem || '', lancamentos: [], equipes: [], pendencias: [], manuais: [], semanas: [], parametros: [], vistorias: [] };
       // Parâmetros do estado completo (o diff contra o vazio só traz o que difere do padrão).
       for (const c of PA.dados.PARAMS) {
         if (!ops.some(o => o.tipo === 'param' && o.chave === c)) ops.push({ tipo: 'param', chave: c, valor: JSON.parse(JSON.stringify(estado[c])) });

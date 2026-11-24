@@ -16,7 +16,8 @@
     } }, aviso ? h('p.peq', { style: { color: 'var(--and)', margin: 0 } }, aviso) : null,
     h('label.campo', 'E-mail', email), h('label.campo', 'Senha', senha), erro, btn,
     h('p.mudo.peq', { style: { margin: 0 } }, 'Esqueceu a senha? Peça ao administrador para redefinir.'));
-    setTimeout(() => email.focus(), 30);
+    // Só põe o cursor no e-mail se a pessoa ainda não começou a digitar em outro campo.
+    setTimeout(() => { if (!form.contains(document.activeElement)) email.focus(); }, 30);
     return form;
   }
   function tela(dados, aoEntrar, aviso) {

@@ -19,7 +19,12 @@ async function entrar(papel) {
   await page.fill('input[type=email]', papel + '@teste.local');
   await page.fill('input[type=password]', SENHA);
   await page.click('button[type=submit]');
-  return { context, page, erros };
+  // Diagnóstico: se a tela não abrir, mostra o que apareceu.
+  const diag = [];
+  page.on('console', m => diag.push(m.type() + ': ' + m.text()));
+  page.on('response', r => { if (r.status() >= 500 || /auth-with-password|auth-refresh/.test(r.url())) diag.push('HTTP ' + r.status() + ' ' + r.url().replace(/.*\/api/, '/api')); });
+  page.on('request', r => { if (/auth-with-password/.test(r.url())) diag.push('REQ login ' + papel); });
+  return { context, page, erros, diag, papel };
 }
 const status = (page, ordem, apto) => page.evaluate(([o, a]) => { const r = PA.ui.ctx.resultado; return r ? r.itens.find(i => i.ordem === o && i.apto === a).status : null; }, [ordem, apto]);
 async function lancar(page, servico, apto, opcao) {
@@ -27,6 +32,10 @@ async function lancar(page, servico, apto, opcao) {
   await page.click(`.servico-chip:has-text("${servico}")`);
   await page.click(`.celula[data-apto="${apto}"]`);
   await page.click(`.opcao:has-text("${opcao}")`);
+}
+async function tela(u, sel) {
+  try { await u.page.waitForSelector(sel, { timeout: 20000 }); }
+  catch (e) { throw new Error(`tela ${sel} não abriu (${u.papel}). URL ${u.page.url()} · corpo: ${(await u.page.innerText('body')).slice(0, 300).replace(/\n/g, ' | ')} · erros: ${u.erros.join(' ; ')} · diag: ${(u.diag || []).slice(-6).join(' ; ')}`); }
 }
 async function esperar(fn, ms) { const t = Date.now(); while (Date.now() - t < (ms || 8000)) { if (await fn()) return true; await new Promise(r => setTimeout(r, 200)); } return false; }
 
@@ -37,9 +46,9 @@ test('admin importa a v6 uma vez; obra lança e a diretoria vê ao vivo', { time
   await adm.page.click('.modal button.prim');
   await adm.page.waitForSelector('.servicos-fita', { timeout: 30000 });
   const dir = await entrar('diretoria');
-  await dir.page.waitForSelector('.kpis'); // diretoria abre no Painel
+  await dir.page.waitForSelector('.torre'); // diretoria abre na Torre (v3)
   const obra = await entrar('obra');
-  await obra.page.waitForSelector('.servicos-fita');
+  await tela(obra, '.servicos-fita');
   assert.notStrictEqual(await status(dir.page, 4, 193), 'Concluído');
   await lancar(obra.page, 'Portas', 193, 'Concluído');
   assert.ok(await esperar(async () => (await status(dir.page, 4, 193)) === 'Concluído'), 'diretoria viu ao vivo');
@@ -52,7 +61,7 @@ test('admin importa a v6 uma vez; obra lança e a diretoria vê ao vivo', { time
 });
 test('sem internet: lançamento fica na fila e é enviado uma vez quando volta', { timeout: 120000 }, async () => {
   const obra = await entrar('obra');
-  await obra.page.waitForSelector('.servicos-fita');
+  await tela(obra, '.servicos-fita');
   await obra.context.setOffline(true);
   await lancar(obra.page, 'Portas', 183, 'Concluído');
   assert.ok(await esperar(async () => (await obra.page.locator('[data-fila="1"]').count()) === 1), 'faixa da fila');
@@ -67,7 +76,7 @@ test('sem internet: lançamento fica na fila e é enviado uma vez quando volta',
 });
 test('dois usuários ao mesmo tempo; desfazer conferido; acesso revogado pede login', { timeout: 120000 }, async () => {
   const a = await entrar('obra'); const b = await entrar('obra2');
-  await a.page.waitForSelector('.servicos-fita'); await b.page.waitForSelector('.servicos-fita');
+  await tela(a, '.servicos-fita'); await tela(b, '.servicos-fita');
   await Promise.all([lancar(a.page, 'Louças', 174, 'Em andamento'), lancar(b.page, 'Louças', 164, 'Em andamento')]);
   assert.ok(await esperar(async () => (await S.su.collection('lancamentos').getFullList({ filter: 'servico="loucas" && (apto=174 || apto=164) && codigo="and"' })).length === 2));
   // Mesmo apto: A lança, B altera depois → desfazer de A é recusado.
@@ -91,7 +100,7 @@ test('dois usuários ao mesmo tempo; desfazer conferido; acesso revogado pede lo
 });
 test('desfazer só mexe no que eu alterei (não recria o que outra pessoa apagou)', { timeout: 120000 }, async () => {
   const a = await entrar('obra'); const b = await entrar('obra2');
-  await a.page.waitForSelector('.servicos-fita'); await b.page.waitForSelector('.servicos-fita');
+  await tela(a, '.servicos-fita'); await tela(b, '.servicos-fita');
   const uid = await b.page.evaluate(() => PA.ui.ctx.estado.pendencias[0].id);
   await lancar(a.page, 'Louças', 101, 'Em andamento');
   assert.ok(await esperar(async () => (await S.su.collection('lancamentos').getFullList({ filter: 'servico="loucas" && apto=101' })).length === 1));

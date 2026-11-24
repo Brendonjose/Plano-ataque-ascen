@@ -126,36 +126,55 @@
     if (typeof data === 'number' && codigo === '1') l.dataReal = data; else delete l.dataReal;
     e.lancamentos.entrega[apto] = l;
   }
+  // Limites para caber nas regras do servidor (motivos json 20000 bytes; descrição da pendência 2000).
+  const LIM = { motivos: 10, texto: 500 };
+  const corta = (t, n) => String(t || '').slice(0, n || LIM.texto);
+  const ultimaDo = (e, apto) => { const vs = vistoriasDo(e, apto); return vs[vs.length - 1]; };
   const vistoria = {
+    /** Agenda (ou remarca) a vistoria em aberto. Apto já aprovado: não faz nada. */
     agendar(estado, apto, data, acompanhadoPor) {
+      const u = ultimaDo({ vistorias: estado.vistorias || [] }, apto);
+      if (u && u.resultado === 'aprovado') return estado;
       return alterar(estado, `Vistoria agendada · apto ${apto}`, e => {
         e.vistorias = e.vistorias || [];
-        const v = abertaOuNova(e, apto); v.agendada = data; if (acompanhadoPor !== undefined) v.acompanhadoPor = acompanhadoPor;
+        const v = abertaOuNova(e, apto); v.agendada = data; if (acompanhadoPor !== undefined) v.acompanhadoPor = corta(acompanhadoPor, 120);
       });
     },
+    /** Aprova. Se a última vistoria já tem resultado (correção da ficha), edita essa em vez de criar outra. */
     aprovar(estado, apto, d) {
       d = d || {};
       return alterar(estado, `Vistoria aprovada · apto ${apto}`, e => {
         e.vistorias = e.vistorias || [];
-        const v = abertaOuNova(e, apto);
-        Object.assign(v, { resultado: 'aprovado', realizada: d.realizada ?? null, acompanhadoPor: d.acompanhadoPor || v.acompanhadoPor || '', obs: d.obs || '', motivos: [] });
+        const u = ultimaDo(e, apto);
+        const v = u && u.resultado === 'aprovado' ? u : abertaOuNova(e, apto);
+        Object.assign(v, { resultado: 'aprovado', realizada: d.realizada ?? null, acompanhadoPor: corta(d.acompanhadoPor || v.acompanhadoPor || '', 120), obs: corta(d.obs), motivos: [] });
         if (v.agendada === null) v.agendada = v.realizada;
         lancEntrega(e, apto, '1', v.realizada);
       });
     },
-    /** Reprova: registra os motivos, agenda a próxima vistoria e abre uma pendência por motivo. */
+    /** Reprova: registra os motivos, agenda a próxima vistoria e abre uma pendência por motivo novo.
+     *  Se a última vistoria já é uma reprova (correção da ficha), edita essa em vez de duplicar. */
     reprovar(estado, apto, d) {
       d = d || {};
       return alterar(estado, `Vistoria reprovada · apto ${apto}`, e => {
         e.vistorias = e.vistorias || [];
-        const v = abertaOuNova(e, apto);
-        const motivos = (d.motivos || []).filter(m => m && m.categoria).map(m => ({ categoria: m.categoria, descricao: m.descricao || '' }));
-        Object.assign(v, { resultado: 'reprovado', realizada: d.realizada ?? null, acompanhadoPor: d.acompanhadoPor || v.acompanhadoPor || '', obs: d.obs || '', motivos });
+        const vs = vistoriasDo(e, apto);
+        const u = vs[vs.length - 1];
+        let v, proxima = null;
+        if (u && u.resultado === 'reprovado') v = u;
+        else v = abertaOuNova(e, apto);
+        const motivos = (d.motivos || []).filter(m => m && m.categoria).slice(0, LIM.motivos).map(m => ({ categoria: corta(m.categoria, 80), descricao: corta(m.descricao) }));
+        const jaTinha = (v.motivos || []).map(m => m.categoria + '|' + m.descricao);
+        Object.assign(v, { resultado: 'reprovado', realizada: d.realizada ?? null, acompanhadoPor: corta(d.acompanhadoPor || v.acompanhadoPor || '', 120), obs: corta(d.obs), motivos });
         if (v.agendada === null) v.agendada = v.realizada;
-        if (typeof d.novaData === 'number') e.vistorias.push({ uid: novoUid(), apto, numero: v.numero + 1, agendada: d.novaData, realizada: null, resultado: 'agendada', motivos: [], acompanhadoPor: '', obs: '' });
+        if (!proxima) proxima = vistoriasDo(e, apto).find(x => x.numero === v.numero + 1) || null;
+        if (typeof d.novaData === 'number') {
+          if (proxima) proxima.agendada = d.novaData;
+          else e.vistorias.push({ uid: novoUid(), apto, numero: v.numero + 1, agendada: d.novaData, realizada: null, resultado: 'agendada', motivos: [], acompanhadoPor: '', obs: '' });
+        }
         const cats = PA.modelo.categoriasReprova(e);
         const agora = Date.now();
-        motivos.forEach((m, i) => {
+        motivos.filter(m => !jaTinha.includes(m.categoria + '|' + m.descricao)).forEach((m, i) => {
           const c = cats.find(x => x.nome === m.categoria);
           e.pendencias.push({ id: 'p' + agora.toString(36) + i + Math.random().toString(36).slice(2, 6), ordem: agora + i, apto, etapa: m.categoria,
             descricao: `Reprova vistoria nº ${v.numero}: ${m.descricao}`.trim(), responsavel: c ? c.empreiteira : '', abertura: v.realizada,

@@ -30,6 +30,8 @@
     const sit = PA.motor.situacaoEntrega(ctx.estado, it);
     const vs = sit.vistorias;
     const aberta = vs.filter(v => v.resultado === 'agendada').pop();
+    const ultima = vs[vs.length - 1];
+    const aprovado = ultima && ultima.resultado === 'aprovado';
     const historico = vs.length ? h('div.tabela-wrap', h('table.tab',
       h('thead', h('tr', ['Nº', 'Agendada', 'Realizada', 'Resultado', 'Motivos', 'Acompanhou'].map(t => h('th', t)))),
       h('tbody', vs.map(v => h('tr', h('td', v.numero + 'ª'), h('td', fmt.dataOu(v.agendada)), h('td', fmt.dataOu(v.realizada)),
@@ -73,10 +75,10 @@
     const escolha = qual => { blocoReprova.classList.toggle('oculto', qual !== 'r'); blocoAprova.classList.toggle('oculto', qual !== 'a'); };
     const m = modal(titulo, [
       h('div.secao-titulo', 'Histórico'), historico,
-      h('div.secao-titulo', { style: { marginTop: '6px' } }, aberta ? `Vistoria ${aberta.numero}ª` : 'Registrar vistoria'),
+      h('div.secao-titulo', { style: { marginTop: '6px' } }, aberta ? `Vistoria ${aberta.numero}ª` : (aprovado ? `Corrigir a ${ultima.numero}ª vistoria (já aprovada)` : 'Registrar vistoria')),
       h('div.grade-cartoes.g2', { style: { gap: '10px' } }, h('label.campo', 'Agendada para', agendada), h('label.campo', 'Realizada em', realizada),
         h('label.campo', 'Acompanhado por', acomp), h('label.campo', 'Observação', obs)),
-      h('div.linha', h('button.btn', { onclick: () => {
+      h('div.linha', aprovado ? null : h('button.btn', { onclick: () => {
         if (!ler(agendada)) { toast('Informe a data.'); return; }
         m.fechar(); PA.ui.aplicar(PA.acoes.vistoria.agendar(ctx.estado, apto, ler(agendada), valorDe(acomp)), { msg: `Apto ${apto}: vistoria agendada para ${fmt.data(ler(agendada))}` });
       } }, 'Só agendar'),

@@ -47,3 +47,37 @@ test('diff e aplicarOps levam as vistorias e as categorias', () => {
   assert.deepStrictEqual(r.vistorias, s.vistorias);
   assert.deepStrictEqual(r.categoriasReprova, s.categoriasReprova);
 });
+// ---- Checkpoint 1 da v3 ----
+test('I1: situação da Entrega vem das vistorias (nunca contradiz o histórico)', () => {
+  let s = PA.acoes.vistoria.reprovar(e, 164, { realizada: deISO('2026-11-25'), motivos: [{ categoria: 'Piso', descricao: 'x' }], novaData: deISO('2026-12-02') });
+  // Simula a gravação concorrente: o lançamento manual diz "1", mas o histórico diz reprovado/agendada.
+  s = JSON.parse(JSON.stringify(s)); s.lancamentos.entrega[164] = { codigo: '1' };
+  assert.strictEqual(ent(s, 164).status, 'Em andamento');
+  s = PA.acoes.vistoria.aprovar(s, 164, { realizada: deISO('2026-12-02') });
+  assert.strictEqual(ent(s, 164).status, 'Concluído');
+});
+test('I2: textos e quantidade de motivos são limitados para caber no servidor', () => {
+  const longo = 'x'.repeat(3000);
+  const s = PA.acoes.vistoria.reprovar(e, 154, { realizada: deISO('2026-11-25'), novaData: deISO('2026-12-02'), obs: longo,
+    motivos: Array.from({ length: 30 }, (_, i) => ({ categoria: 'Pintura', descricao: longo + i })) });
+  const v = s.vistorias.find(x => x.apto === 154 && x.resultado === 'reprovado');
+  assert.ok(v.motivos.length <= 10 && v.motivos.every(m => m.descricao.length <= 500) && v.obs.length <= 500);
+  assert.ok(JSON.stringify(v.motivos).length < 20000);
+  assert.ok(s.pendencias.filter(p => p.apto === 154).every(p => p.descricao.length <= 600));
+});
+test('I3: corrigir a ficha não cria vistoria nova nem duplica pendências', () => {
+  let s = PA.acoes.vistoria.aprovar(e, 144, { realizada: deISO('2026-11-25'), obs: 'a' });
+  s = PA.acoes.vistoria.aprovar(s, 144, { realizada: deISO('2026-11-25'), obs: 'corrigido' });
+  assert.deepStrictEqual(s.vistorias.filter(v => v.apto === 144).map(v => [v.numero, v.resultado, v.obs]), [[1, 'aprovado', 'corrigido']]);
+  let r = PA.acoes.vistoria.reprovar(e, 134, { realizada: deISO('2026-11-25'), motivos: [{ categoria: 'Piso', descricao: 'a' }, { categoria: 'Pintura', descricao: 'b' }] });
+  r = PA.acoes.vistoria.reprovar(r, 134, { realizada: deISO('2026-11-25'), motivos: [{ categoria: 'Piso', descricao: 'a' }, { categoria: 'Pintura', descricao: 'b' }, { categoria: 'Portas', descricao: 'c' }] });
+  assert.deepStrictEqual(r.vistorias.filter(v => v.apto === 134).map(v => v.resultado), ['reprovado']);
+  assert.strictEqual(r.pendencias.filter(p => p.apto === 134 && /vistoria nº 1/.test(p.descricao)).length, 3);
+  const ag = PA.acoes.vistoria.agendar(s, 144, deISO('2026-12-10'));
+  assert.strictEqual(ag, s, 'apto já aprovado: agendar não faz nada');
+});
+test('M3: importar estado com vistorias não quebra', () => {
+  const s = PA.acoes.vistoria.aprovar(e, 174, { realizada: deISO('2026-11-25') });
+  const ops = PA.dados.diff(PA.modelo.estadoVazio(), s);
+  for (const op of ops) assert.ok(PA.dados.servidor.opParaRegistro(op));
+});
