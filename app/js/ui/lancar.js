@@ -27,8 +27,14 @@
   function gravarPref(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* ignora */ } }
 
   /** Folha de lançamento de um apto (ou de vários, no modo seleção). */
-  function abrirLancamento(ctx, servicoId, aptos) {
+  function abrirLancamento(ctx, servicoId, aptos, opts) {
     const s = M.POR_ID[servicoId];
+    // Entrega: a ficha de vistoria do cliente substitui o lançamento (o manual continua acessível).
+    if (servicoId === 'entrega' && aptos.length === 1 && !(opts && opts.manual) && PA.ui.abrirVistoria) return PA.ui.abrirVistoria(ctx, aptos[0]);
+    if (servicoId === 'entrega' && PA.ui.pode('lancar')) {
+      const comVistoria = aptos.filter(a => (ctx.estado.vistorias || []).some(v => v.apto === a && (v.resultado === 'aprovado' || v.resultado === 'reprovado')));
+      if (comVistoria.length) PA.ui.toast(`Apto(s) ${comVistoria.join(', ')}: a situação segue a vistoria do cliente; o lançamento manual não muda a situação deles.`);
+    }
     if (!PA.ui.pode('lancar')) {
       // Perfil só de consulta: mostra a situação, sem opções de lançamento.
       const it = itemDe(ctx.resultado, s.ordem, aptos[0]);

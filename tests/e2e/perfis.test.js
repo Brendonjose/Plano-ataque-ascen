@@ -28,8 +28,8 @@ const menu = page => page.$$eval('.lateral nav a span', a => a.map(x => x.textCo
 
 test('menu por perfil', { timeout: 90000 }, async () => {
   const esperado = {
-    empreiteira: ['Painel', 'Acompanhamento', 'Macro', 'Cronograma', 'Pendências', 'Histórico', 'Relatórios', 'Minha conta'],
-    diretoria: ['Painel', 'Acompanhamento', 'Macro', 'Cronograma', 'Estratégia', 'Ranking', 'Pendências', 'Histórico', 'Relatórios', 'Minha conta']
+    empreiteira: ['Painel', 'Torre', 'Entregas', 'Reprovas', 'Acompanhamento', 'Macro', 'Cronograma', 'Pendências', 'Histórico', 'Relatórios', 'Minha conta'],
+    diretoria: ['Painel', 'Torre', 'Entregas', 'Reprovas', 'Acompanhamento', 'Macro', 'Cronograma', 'Estratégia', 'Ranking', 'Pendências', 'Histórico', 'Relatórios', 'Minha conta']
   };
   for (const papel of Object.keys(esperado)) {
     const u = await entrar(papel + '@teste.local');

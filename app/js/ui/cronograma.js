@@ -60,12 +60,21 @@
   function tabelaServicos(ctx) {
     const res = ctx.resultado;
     const sv = id => ctx.estado.cronograma.servicos[id];
-    const set = (id, campo, rot) => v => v !== null && mudar(ctx, rot, e => { e.cronograma.servicos[id][campo] = v; });
+    const lim = PA.motor.limitacao(res);
+    const set = (id, campo, rot) => v => {
+      if (v === null) return;
+      const s = M.POR_ID[id], antes = res.cron.porOrdem[s.ordem].termTodas;
+      mudar(ctx, rot, e => { e.cronograma.servicos[id][campo] = v; });
+      // Explica quando a mudança não move a data (encadeamento: o serviço aguarda o anterior).
+      const depois = PA.ui.ctx.resultado.cron.porOrdem[s.ordem].termTodas, l2 = PA.motor.limitacao(PA.ui.ctx.resultado).porServico[s.ordem];
+      if (campo !== 'prazo' && antes === depois && l2.tipo === 'anterior') PA.ui.toast(`O término de ${s.nome} não mudou: ele aguarda o serviço anterior (${l2.anterior}). Reforce o anterior para antecipar.`);
+    };
+    const define = o => { const l = lim.porServico[o]; return !l || l.tipo === 'concluido' ? h('span.mudo', 'concluído') : (l.tipo === 'equipe' ? h('span.pill.ok', 'A própria equipe') : h('span.pill.blq', 'Aguarda ' + l.anterior)); };
     return h('div.cartao', h('h2', 'Serviços — entradas e projeção encadeada', h('small', 'mude a equipe ou a produtividade para simular; tudo recalcula na hora')),
       h('div.tabela-wrap', h('table.tab',
         h('thead',
           h('tr', h('th', 'Serviço'), h('th', 'Prazo (d.ú.)'), h('th', 'Unid./apto'), h('th', 'Produtiv.'), h('th', 'Equipe'), h('th.num', 'Ritmo (aptos/dia)'),
-            FIN.map(f => h('th', 'Limite F' + f)), h('th.num', 'Pendentes'), h('th', 'Término proj.'), h('th.num', 'Pior folga'), h('th.num', 'Necessária'), h('th.num', 'Acréscimo'), h('th.num', 'Atraso gerado'))),
+            FIN.map(f => h('th', 'Limite F' + f)), h('th.num', 'Pendentes'), h('th', 'Término proj.'), h('th.num', 'Pior folga'), h('th.num', 'Necessária'), h('th.num', 'Acréscimo'), h('th.num', 'Atraso gerado'), h('th', 'O que define o prazo'))),
         h('tbody', res.cron.servicos.map(L => {
           const s = M.POR_ORDEM[L.ordem];
           const piso = s.id === 'piso';
@@ -81,7 +90,7 @@
             h('td.num', pend), h('td', fmt.dataOu(L.termTodas, 'concluído')), h('td.num', folgaEl(L.piorFolga)),
             h('td.num', typeof L.moTodas === 'number' && L.moTodas > L.equipe ? h('b.neg', L.moTodas) : fmt.num(L.moTodas)),
             h('td.num', typeof L.acrescimo === 'number' ? (L.acrescimo > 0 ? '+' + L.acrescimo : '0') : fmt.num(L.acrescimo)),
-            h('td.num', L.atrasoGerado.obra ? h('span.neg', '+' + L.atrasoGerado.obra + ' d') : '—'));
+            h('td.num', L.atrasoGerado.obra ? h('span.neg', '+' + L.atrasoGerado.obra + ' d') : '—'), h('td', define(L.ordem)));
         })))),
       h('p.mudo.peq', { style: { marginTop: '10px' } }, 'Ritmo = equipe ÷ funcionário-dia por apto. Término encadeado: nenhum serviço termina uma prumada antes do anterior + ciclo. Mão de obra necessária supõe frente liberada a tempo. Atraso gerado = quanto o serviço acrescenta ao atraso do anterior.'));
   }
@@ -101,6 +110,10 @@
     el.querySelectorAll('input, select, textarea').forEach(i => { if (i.hasAttribute('data-equipe') ? !q : !p) i.disabled = true; });
   }
   function render(el, ctx) {
+    const g = PA.motor.limitacao(ctx.resultado).gargalo;
+    if (g) el.appendChild(h('div.cartao.gargalo', { style: { marginBottom: '14px', borderLeft: '4px solid var(--late)' } },
+      h('b', 'Gargalo atual da obra: ' + g.servico), h('span.peq', ` · equipe ${fmt.num(g.equipe)} → necessária ${fmt.num(g.necessaria)} · término ${fmt.dataOu(g.termino)}`),
+      h('div.mudo.peq', 'Reforçar este serviço é o que antecipa a entrega. Serviços marcados "Aguarda …" não andam com mais equipe enquanto o anterior não terminar.')));
     el.appendChild(h('div.pilha', h('div.grade-cartoes', { style: { gridTemplateColumns: 'minmax(0, 520px) minmax(0, 1fr)' } }, metas(ctx), piso(ctx)), tabelaServicos(ctx), porPrumada(ctx)));
     travar(el);
   }

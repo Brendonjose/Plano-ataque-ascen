@@ -106,3 +106,24 @@ Enquanto o site estiver fora, a obra pode continuar lançando nas páginas que j
 - **O painel técnico `/_/` fica acessível pela internet,** protegido pela senha e pelo limite de tentativas. Use uma senha forte e única.
 - **Os backups ficam na própria EC2.** Por isso, baixe um por semana para fora dela.
 - **O acesso SSH (porta 22)** deve ficar liberado só para o seu IP no Security Group.
+
+## Atualizar com segurança e voltar atrás
+
+Antes de instalar uma versão nova:
+
+1. **Faça um backup dos dados agora:** painel técnico `https://SEUSITE/_/` → **Settings → Backups → Initialize new backup**. Baixe o arquivo para o seu computador.
+2. Atualize normalmente (seção "Atualizar o sistema").
+
+Se não gostar da versão nova, volte para a anterior. A versão 2 está guardada na branch `backup/v2-estavel`. Rode na EC2, um comando de cada vez:
+
+```bash
+cd /opt/plano-ataque-repo && sudo git fetch origin && sudo git checkout backup/v2-estavel
+```
+
+```bash
+sudo ./servidor/instalar.sh --dominio SEUSITE --admin-email SEU_EMAIL
+```
+
+- **Lançamentos feitos depois da atualização continuam valendo.** Os dados não são apagados ao voltar o código.
+- **Para voltar também os dados** ao ponto anterior, restaure no painel `/_/` o backup do passo 1. Isso apaga o que foi lançado depois dele.
+- **Para voltar a seguir a versão nova depois:** `sudo git checkout main && sudo git pull` e rode o instalador de novo.

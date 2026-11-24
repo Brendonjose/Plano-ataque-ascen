@@ -172,7 +172,7 @@
   }
   function telaInicial() {
     const p = ctx.usuario ? ctx.usuario.papel : 'admin';
-    const pref = p === 'empreiteira' ? 'acompanhamento' : (p === 'diretoria' ? 'painel' : 'lancar');
+    const pref = p === 'empreiteira' ? 'acompanhamento' : (p === 'diretoria' ? 'torre' : 'lancar');
     return TELAS.find(t => t.id === pref && visivel(t)) || TELAS.find(visivel);
   }
   function telaAtual() {

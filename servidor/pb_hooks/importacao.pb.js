@@ -11,7 +11,7 @@ routerAdd('POST', '/api/pa/importar', (e) => {
   e.app.runInTransaction((tx) => {
     const n = tx.countRecords('lancamentos') + tx.countRecords('parametros');
     if (n > 0) { erro = 'ja'; return; }
-    const tabelas = { lancamentos: 'lancamentos', equipes: 'equipes', pendencias: 'pendencias', manuais: 'manuais', semanas: 'semanas', parametros: 'parametros' };
+    const tabelas = { lancamentos: 'lancamentos', equipes: 'equipes', pendencias: 'pendencias', manuais: 'manuais', semanas: 'semanas', parametros: 'parametros', vistorias: 'vistorias' };
     let total = 0;
     for (const chave of Object.keys(tabelas)) {
       const col = tx.findCollectionByNameOrId(tabelas[chave]);

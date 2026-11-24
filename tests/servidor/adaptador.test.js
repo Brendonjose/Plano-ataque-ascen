@@ -79,3 +79,16 @@ test('I3: muitas tentativas de senha errada são limitadas; avatar e emailVisibi
   await obra.collection('users').update(S.usuarios.obra2.id, { emailVisibility: true }).catch(() => null);
   assert.strictEqual((await S.su.collection('users').getOne(S.usuarios.obra2.id)).emailVisibility, false);
 });
+test('vistoria reprovada vai e volta pelo servidor com pendências e categorias', async () => {
+  const d = await adaptador('admin');
+  const e0 = await d.carregar();
+  let e1 = PA.acoes.vistoria.reprovar(e0, 154, { realizada: 46350, motivos: [{ categoria: 'Pintura', descricao: 'mancha' }], novaData: 46357, acompanhadoPor: S.usuarios.obra.id });
+  e1 = PA.acoes.alterar(e1, 'cat', x => { x.categoriasReprova = PA.modelo.categoriasReprova(x).concat([{ nome: 'Gesso', empreiteira: 'X' }]); });
+  const r = await d.gravar(PA.dados.diff(e0, e1));
+  assert.strictEqual(r.ok, true, JSON.stringify(r.falhas));
+  const e2 = await (await adaptador('diretoria')).carregar();
+  assert.deepStrictEqual(e2.vistorias.filter(v => v.apto === 154), e1.vistorias.filter(v => v.apto === 154));
+  assert.ok(e2.pendencias.some(p => p.apto === 154 && /vistoria nº 1/.test(p.descricao)));
+  assert.ok(e2.categoriasReprova.some(c => c.nome === 'Gesso'));
+  assert.strictEqual(e2.lancamentos.entrega[154].codigo, 'and');
+});
