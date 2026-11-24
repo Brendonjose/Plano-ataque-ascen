@@ -34,3 +34,19 @@ test('servidor sai configurado com backup diário (7 cópias) e limites', { time
     assert.deepStrictEqual([cfg.backups.cron, cfg.backups.cronMaxKeep, cfg.batch.enabled], ['0 6 * * *', 7, false]);
   } finally { await S.parar(); }
 });
+
+test('carimbar_versao: arquivos locais do index.html ganham ?v= (e trocam numa nova atualização)', () => {
+  const fs = require('fs'); const os = require('os'); const path = require('path');
+  const { execFileSync } = require('child_process');
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'carimbo-'));
+  const arq = path.join(dir, 'index.html');
+  fs.copyFileSync(path.join(__dirname, '..', '..', 'app', 'index.html'), arq);
+  const lib = path.join(__dirname, '..', '..', 'servidor', 'lib.sh');
+  execFileSync('bash', ['-c', `source "${lib}" && carimbar_versao "${arq}" abc123 && carimbar_versao "${arq}" def456`]);
+  const html = fs.readFileSync(arq, 'utf8');
+  const refs = [...html.matchAll(/(?:src|href)="([^"]+)"/g)].map(m => m[1]);
+  assert.ok(refs.length > 40);
+  for (const r of refs) assert.match(r, /\?v=def456$/, r);
+  assert.ok(html.includes('src="js/modelo.js?v=def456"'));
+  fs.rmSync(dir, { recursive: true, force: true });
+});
