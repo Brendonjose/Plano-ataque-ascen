@@ -3,7 +3,7 @@
   'use strict';
   const PA = root.PA = root.PA || {};
   PA.dados = PA.dados || {};
-  const COLECOES = ['lancamentos', 'equipes', 'pendencias', 'manuais', 'semanas', 'parametros'];
+  const COLECOES = ['lancamentos', 'equipes', 'pendencias', 'manuais', 'semanas', 'parametros', 'vistorias'];
   const nulo0 = v => (typeof v === 'number' && v !== 0 ? v : null); // campo número vazio no PocketBase = 0
 
   // ---- Conversão estado ⇄ registros ----
@@ -21,6 +21,11 @@
     }
     if (op.tipo === 'manual') return { colecao: 'manuais', id: ids.manual(op.apto, op.etapa), dados: op.valor === null ? null : { apto: op.apto, etapa: op.etapa, valor: String(op.valor) } };
     if (op.tipo === 'semana') return { colecao: 'semanas', id: ids.semana(op.semana), dados: op.valor && { semana: op.semana, dados: op.valor } };
+    if (op.tipo === 'vistoria') {
+      const v = op.valor;
+      return { colecao: 'vistorias', id: ids.vistoria(op.uid), dados: v && { uid: op.uid, apto: v.apto, numero: v.numero || 0, agendada: v.agendada || 0, realizada: v.realizada || 0,
+        resultado: v.resultado, motivos: v.motivos || [], acompanhado_por: v.acompanhadoPor || '', obs: v.obs || '' } };
+    }
     if (op.tipo === 'param') return { colecao: 'parametros', id: ids.param(op.chave), dados: op.valor === null ? null : { chave: op.chave, valor: op.valor } };
     throw new Error('Operação desconhecida: ' + op.tipo);
   }
@@ -40,6 +45,11 @@
     }
     if (colecao === 'manuais') return { tipo: 'manual', apto: r.apto, etapa: r.etapa, valor: apagado ? null : r.valor };
     if (colecao === 'semanas') return { tipo: 'semana', semana: r.semana, valor: apagado ? null : r.dados };
+    if (colecao === 'vistorias') {
+      if (apagado) return { tipo: 'vistoria', uid: r.uid, valor: null };
+      return { tipo: 'vistoria', uid: r.uid, valor: { uid: r.uid, apto: r.apto, numero: r.numero, agendada: nulo0(r.agendada), realizada: nulo0(r.realizada), resultado: r.resultado,
+        motivos: Array.isArray(r.motivos) ? r.motivos : [], acompanhadoPor: r.acompanhado_por || '', obs: r.obs || '' } };
+    }
     if (colecao === 'parametros') return { tipo: 'param', chave: r.chave, valor: apagado ? null : r.valor };
     return null;
   }
@@ -86,7 +96,7 @@
         for (const r of lista) { versoes[chave(c, r.id)] = r.updated; const op = registroParaOp(c, r, false); if (op) ops.push(op); }
       }
       // Parâmetros primeiro (base), depois o resto.
-      const ordem = { param: 0, equipe: 1, lanc: 2, pend: 2, manual: 2, semana: 2 };
+      const ordem = { param: 0, equipe: 1, lanc: 2, pend: 2, manual: 2, semana: 2, vistoria: 2 };
       ops.sort((a, b) => ordem[a.tipo] - ordem[b.tipo]);
       e = PA.dados.aplicarOps(e, ops);
       e.meta.origem = 'servidor';

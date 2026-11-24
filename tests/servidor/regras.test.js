@@ -79,3 +79,18 @@ test('empreiteira e diretoria leem os dados', async () => {
     assert.ok((await c.collection('lancamentos').getFullList()).length >= 1);
   }
 });
+test('vistorias: obra grava; diretoria e empreiteira não; histórico registra', async () => {
+  const dados = { id: 'vteste000000001', uid: 'vu1', apto: 164, numero: 1, agendada: 46351, resultado: 'agendada', motivos: [] };
+  for (const papel of ['empreiteira', 'diretoria']) {
+    const c = await S.cliente(papel);
+    assert.ok([400, 403, 404].includes(await falha(c.collection('vistorias').create(dados))), papel);
+  }
+  const obra = await S.cliente('obra');
+  const r = await obra.collection('vistorias').create(dados);
+  assert.strictEqual(r.atualizado_por, S.usuarios.obra.id);
+  const emp = await S.cliente('empreiteira');
+  assert.strictEqual((await emp.collection('vistorias').getFullList()).length, 1, 'empreiteira lê');
+  assert.ok([400, 403, 404].includes(await falha(emp.collection('vistorias').update(dados.id, { resultado: 'aprovado' }))));
+  const alts = await S.su.collection('alteracoes').getFullList({ filter: 'tabela="vistorias"' });
+  assert.strictEqual(alts.length, 1);
+});

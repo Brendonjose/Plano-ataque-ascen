@@ -69,11 +69,22 @@
       estrategia: { vendido: {}, escopo: {}, segueprioridade: {}, rotulo: {} },
       manuais: {},
       retratoBase: {}, // aptos concluídos na data-base (BASE!W), por serviço
+      vistorias: [], // vistorias do cliente na entrega
+      categoriasReprova: null, // null = lista padrão (categoriasPadrao)
       pendencias: [],
       historico: [],
       meta: { ultimoBackup: null, pilhaDesfazer: [], importadoEm: null, origem: null }
     };
   }
 
-  PA.modelo = { SERVICOS, POR_ID, POR_ORDEM, APTOS, APTO_POR_NUM, ORDEM_PRUMADAS, ETAPAS_QUADRO, linhaGrade, colGrade, colRejunte, norm, estadoVazio };
+  /** Categorias de reprova padrão, cada uma ligada à empreiteira do serviço correspondente. */
+  function categoriasPadrao(estado) {
+    const emp = id => (estado && estado.cronograma.servicos[id] ? estado.cronograma.servicos[id].empreiteira : '') || '';
+    const piso = estado ? estado.piso.empreiteiras.ds + ' / ' + estado.piso.empreiteiras.jun : '';
+    return [['Piso', piso], ['Rejunte', piso], ['Pintura', emp('pintura2')], ['Portas', emp('portas')], ['Louças e metais', emp('loucas')],
+      ['Limpeza', emp('limpeza-fina')], ['Caixilhos', emp('regulagem')], ['Bancadas', ''], ['Rodapé', ''], ['Espelhos', ''], ['Elétrica', ''], ['Hidráulica', ''], ['Outros', '']]
+      .map(([nome, empreiteira]) => ({ nome, empreiteira: String(empreiteira).trim() }));
+  }
+  function categoriasReprova(estado) { return estado.categoriasReprova && estado.categoriasReprova.length ? estado.categoriasReprova : categoriasPadrao(estado); }
+  PA.modelo = { categoriasPadrao, categoriasReprova, SERVICOS, POR_ID, POR_ORDEM, APTOS, APTO_POR_NUM, ORDEM_PRUMADAS, ETAPAS_QUADRO, linhaGrade, colGrade, colRejunte, norm, estadoVazio };
 })(typeof globalThis !== 'undefined' ? globalThis : this);

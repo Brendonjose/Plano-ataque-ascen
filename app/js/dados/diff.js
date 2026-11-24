@@ -5,7 +5,7 @@
   PA.dados = PA.dados || {};
   const json = v => JSON.stringify(v === undefined ? null : v);
   const clone = o => (o === undefined ? undefined : JSON.parse(JSON.stringify(o)));
-  const PARAMS = ['config', 'feriados', 'cronograma', 'piso', 'estrategia', 'retratoBase'];
+  const PARAMS = ['config', 'feriados', 'cronograma', 'piso', 'estrategia', 'retratoBase', 'categoriasReprova'];
 
   /** Chaves de equipe: serviços (exceto piso) + as duas equipes do piso. */
   function chavesEquipe() { return PA.modelo.SERVICOS.filter(s => s.id !== 'piso').map(s => s.id).concat(['piso_ds', 'piso_jun']); }
@@ -62,6 +62,11 @@
         if (json(ma[et]) !== json(mb[et])) ops.push({ tipo: 'manual', apto: Number(ap), etapa: et, valor: mb[et] === undefined ? null : mb[et] });
       }
     }
+    const va = {}; (a.vistorias || []).forEach(v => { va[v.uid] = v; });
+    const vb = {}; (b.vistorias || []).forEach(v => { vb[v.uid] = v; });
+    for (const id of new Set(Object.keys(va).concat(Object.keys(vb)))) {
+      if (json(va[id]) !== json(vb[id])) ops.push({ tipo: 'vistoria', uid: id, valor: vb[id] === undefined ? null : clone(vb[id]) });
+    }
     const ha = {}; a.historico.forEach(x => { ha[x.semana] = x; });
     const hb = {}; b.historico.forEach(x => { hb[x.semana] = x; });
     for (const sem of new Set(Object.keys(ha).concat(Object.keys(hb)))) {
@@ -85,6 +90,12 @@
         if (op.valor === null) { if (i >= 0) e.pendencias.splice(i, 1); }
         else if (i >= 0) e.pendencias[i] = clone(op.valor); else e.pendencias.push(clone(op.valor));
         e.pendencias.sort((x, y) => (x.ordem || 0) - (y.ordem || 0));
+      } else if (op.tipo === 'vistoria') {
+        e.vistorias = e.vistorias || [];
+        const i = e.vistorias.findIndex(v => v.uid === op.uid);
+        if (op.valor === null) { if (i >= 0) e.vistorias.splice(i, 1); }
+        else if (i >= 0) e.vistorias[i] = clone(op.valor); else e.vistorias.push(clone(op.valor));
+        e.vistorias.sort((x, y) => x.apto - y.apto || x.numero - y.numero);
       } else if (op.tipo === 'manual') {
         const m = e.manuais[op.apto] = e.manuais[op.apto] || {};
         if (op.valor === null) { delete m[op.etapa]; if (!Object.keys(m).length) delete e.manuais[op.apto]; } else m[op.etapa] = op.valor;
@@ -111,7 +122,8 @@
     equipe: chave => 'e' + hash(chave),
     param: chave => 'p' + hash(chave),
     semana: semana => pad15('s' + String(semana).padStart(3, '0')),
-    pend: uid => 'n' + hash(uid)
+    pend: uid => 'n' + hash(uid),
+    vistoria: uid => 'v' + hash(uid)
   };
   Object.assign(PA.dados, { diff, aplicarOps, ids, chavesEquipe, PARAMS });
 })(typeof globalThis !== 'undefined' ? globalThis : this);

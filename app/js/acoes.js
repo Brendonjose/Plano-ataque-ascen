@@ -109,5 +109,61 @@
       if (valor === '' || valor === null) delete m[etapa]; else m[etapa] = String(valor);
     });
   }
-  PA.acoes = { limpar, alterar, desfazer, ultimoRotulo, lancar, backupJSON, restaurarJSON, importarPorCima, backupAtrasado, marcarBackup, registrarSemana, pendencia, manual };
+  // ---------- Vistoria do cliente (Entrega) ----------
+  const novoUid = () => 'v' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  function vistoriasDo(e, apto) { return e.vistorias.filter(v => v.apto === apto).sort((a, b) => a.numero - b.numero); }
+  /** Vistoria em aberto (agendada) do apto; cria uma nova se não houver. */
+  function abertaOuNova(e, apto) {
+    const vs = vistoriasDo(e, apto);
+    const ab = vs.filter(v => v.resultado === 'agendada').pop();
+    if (ab) return ab;
+    const v = { uid: novoUid(), apto, numero: (vs.length ? vs[vs.length - 1].numero : 0) + 1, agendada: null, realizada: null, resultado: 'agendada', motivos: [], acompanhadoPor: '', obs: '' };
+    e.vistorias.push(v);
+    return v;
+  }
+  function lancEntrega(e, apto, codigo, data) {
+    const l = Object.assign({}, e.lancamentos.entrega[apto] || {}, { codigo });
+    if (typeof data === 'number' && codigo === '1') l.dataReal = data; else delete l.dataReal;
+    e.lancamentos.entrega[apto] = l;
+  }
+  const vistoria = {
+    agendar(estado, apto, data, acompanhadoPor) {
+      return alterar(estado, `Vistoria agendada · apto ${apto}`, e => {
+        e.vistorias = e.vistorias || [];
+        const v = abertaOuNova(e, apto); v.agendada = data; if (acompanhadoPor !== undefined) v.acompanhadoPor = acompanhadoPor;
+      });
+    },
+    aprovar(estado, apto, d) {
+      d = d || {};
+      return alterar(estado, `Vistoria aprovada · apto ${apto}`, e => {
+        e.vistorias = e.vistorias || [];
+        const v = abertaOuNova(e, apto);
+        Object.assign(v, { resultado: 'aprovado', realizada: d.realizada ?? null, acompanhadoPor: d.acompanhadoPor || v.acompanhadoPor || '', obs: d.obs || '', motivos: [] });
+        if (v.agendada === null) v.agendada = v.realizada;
+        lancEntrega(e, apto, '1', v.realizada);
+      });
+    },
+    /** Reprova: registra os motivos, agenda a próxima vistoria e abre uma pendência por motivo. */
+    reprovar(estado, apto, d) {
+      d = d || {};
+      return alterar(estado, `Vistoria reprovada · apto ${apto}`, e => {
+        e.vistorias = e.vistorias || [];
+        const v = abertaOuNova(e, apto);
+        const motivos = (d.motivos || []).filter(m => m && m.categoria).map(m => ({ categoria: m.categoria, descricao: m.descricao || '' }));
+        Object.assign(v, { resultado: 'reprovado', realizada: d.realizada ?? null, acompanhadoPor: d.acompanhadoPor || v.acompanhadoPor || '', obs: d.obs || '', motivos });
+        if (v.agendada === null) v.agendada = v.realizada;
+        if (typeof d.novaData === 'number') e.vistorias.push({ uid: novoUid(), apto, numero: v.numero + 1, agendada: d.novaData, realizada: null, resultado: 'agendada', motivos: [], acompanhadoPor: '', obs: '' });
+        const cats = PA.modelo.categoriasReprova(e);
+        const agora = Date.now();
+        motivos.forEach((m, i) => {
+          const c = cats.find(x => x.nome === m.categoria);
+          e.pendencias.push({ id: 'p' + agora.toString(36) + i + Math.random().toString(36).slice(2, 6), ordem: agora + i, apto, etapa: m.categoria,
+            descricao: `Reprova vistoria nº ${v.numero}: ${m.descricao}`.trim(), responsavel: c ? c.empreiteira : '', abertura: v.realizada,
+            prazo: typeof d.novaData === 'number' ? d.novaData : null, status: 'Aberta', resolvidaEm: null, obs: '' });
+        });
+        lancEntrega(e, apto, 'and');
+      });
+    }
+  };
+  PA.acoes = { vistoria, limpar, alterar, desfazer, ultimoRotulo, lancar, backupJSON, restaurarJSON, importarPorCima, backupAtrasado, marcarBackup, registrarSemana, pendencia, manual };
 })(typeof globalThis !== 'undefined' ? globalThis : this);
