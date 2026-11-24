@@ -12,11 +12,11 @@
   }
   async function carregarUsuarios(ctx) {
     if (!PA.ui.servidor() || ctx.usuariosLista) return;
-    try { ctx.usuariosLista = (await ctx.dados.usuarios.listar()).filter(u => u.ativo !== false); } catch (e) { ctx.usuariosLista = []; }
+    try { ctx.usuariosLista = await ctx.dados.usuarios.listar(); } catch (e) { /* tenta de novo na próxima abertura */ }
   }
   function campoAcomp(ctx, valor) {
     if (PA.ui.servidor()) {
-      const lista = (ctx.usuariosLista || []).filter(u => u.papel !== 'empreiteira');
+      const lista = (ctx.usuariosLista || []).filter(u => u.papel !== 'empreiteira' && u.ativo !== false);
       return select([['', 'Escolha…'], ...lista.map(u => [u.id, u.nome || u.email])], valor || (ctx.usuario && ctx.usuario.id) || '', () => {});
     }
     const nomes = [...new Set((ctx.estado.vistorias || []).map(v => v.acompanhadoPor).filter(Boolean))];
@@ -32,6 +32,7 @@
     const aberta = vs.filter(v => v.resultado === 'agendada').pop();
     const ultima = vs[vs.length - 1];
     const aprovado = ultima && ultima.resultado === 'aprovado';
+    const decidida = vs.some(v => v.resultado === 'aprovado' || v.resultado === 'reprovado');
     const historico = vs.length ? h('div.tabela-wrap', h('table.tab',
       h('thead', h('tr', ['Nº', 'Agendada', 'Realizada', 'Resultado', 'Motivos', 'Acompanhou'].map(t => h('th', t)))),
       h('tbody', vs.map(v => h('tr', h('td', v.numero + 'ª'), h('td', fmt.dataOu(v.agendada)), h('td', fmt.dataOu(v.realizada)),
@@ -45,7 +46,8 @@
     const dIn = v => h('input', { type: 'date', value: typeof v === 'number' ? PA.datas.paraISO(v) : '' });
     const ler = el => (el.value ? PA.datas.deISO(el.value) : null);
     const agendada = dIn(aberta ? aberta.agendada : null);
-    const realizada = dIn(hojeReal);
+    const lancado = (ctx.estado.lancamentos.entrega || {})[apto] || {};
+    const realizada = dIn(aprovado ? ultima.realizada : (it.status === 'Concluído' && typeof lancado.dataReal === 'number' ? lancado.dataReal : hojeReal));
     const acomp = campoAcomp(ctx, aberta && aberta.acompanhadoPor);
     const obs = h('input', { placeholder: 'observação (opcional)' });
     const cats = PA.modelo.categoriasReprova(ctx.estado).map(c => c.nome);
@@ -84,7 +86,8 @@
       } }, 'Só agendar'),
         h('button.btn.opcao-ok', { onclick: () => escolha('a') }, '✓ Aprovado'), h('button.btn.opcao-rep', { onclick: () => escolha('r') }, '✗ Reprovado')),
       blocoAprova, blocoReprova,
-      h('button.btn.peq', { style: { alignSelf: 'flex-start' }, onclick: () => { m.fechar(); PA.ui.abrirLancamento(ctx, 'entrega', [apto], { manual: true }); } }, 'Lançamento manual da entrega')],
+      decidida ? h('p.mudo.peq', { style: { margin: 0 } }, 'A situação da entrega deste apto segue o resultado da vistoria.')
+        : h('button.btn.peq', { style: { alignSelf: 'flex-start' }, onclick: () => { m.fechar(); PA.ui.abrirLancamento(ctx, 'entrega', [apto], { manual: true }); } }, 'Lançamento manual da entrega')],
     null, { largo: true });
   }
   PA.ui.abrirVistoria = abrirVistoria;

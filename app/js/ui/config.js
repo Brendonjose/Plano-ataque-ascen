@@ -67,12 +67,12 @@
   function categorias(ctx) {
     const lista = PA.modelo.categoriasReprova(ctx.estado);
     const salvar = (rot, fn) => mudar(ctx, rot, e => { const l = JSON.parse(JSON.stringify(PA.modelo.categoriasReprova(e))); fn(l); e.categoriasReprova = l; });
-    const nova = h('input', { placeholder: 'nova categoria' });
+    const nova = h('input', { placeholder: 'nova categoria', maxlength: 80 });
     return h('div.cartao.categorias-reprova', h('h2', 'Categorias de reprova', h('small', 'usadas na vistoria de entrega · a empreiteira recebe a pendência')),
       h('div.tabela-wrap', h('table.tab', h('thead', h('tr', h('th', 'Categoria'), h('th', 'Empreiteira responsável'), h('th', ''))),
         h('tbody', lista.map((c, i) => h('tr',
           h('td', txt(c.nome, v => v.trim() && salvar('Categoria renomeada', l => { l[i].nome = v.trim(); }))),
-          h('td', txt(c.empreiteira, v => salvar('Responsável de ' + c.nome, l => { l[i].empreiteira = v.trim(); }), { placeholder: 'a definir' })),
+          h('td', txt(c.empreiteira, v => salvar('Responsável de ' + c.nome, l => { l[i].empreiteira = v.trim(); }), { placeholder: 'a definir', maxlength: 120 })),
           h('td', h('button.btn.peq', { title: 'Remover', onclick: () => salvar('Categoria removida: ' + c.nome, l => { l.splice(i, 1); }) }, icone('lixo')))))))),
       h('div.linha', { style: { marginTop: '10px' } }, nova, h('button.btn.peq', { onclick: () => nova.value.trim() && salvar('Categoria criada', l => { l.push({ nome: nova.value.trim(), empreiteira: '' }); }) }, icone('mais'), 'Incluir')),
       h('p.mudo.peq', { style: { marginTop: '8px' } }, 'Reprovas já registradas guardam o nome da categoria: renomear ou remover não apaga o histórico.'));

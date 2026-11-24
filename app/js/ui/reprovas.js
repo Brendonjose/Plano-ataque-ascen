@@ -7,7 +7,7 @@
     const f = ctx.ui.filtroRep || {};
     const set = (k, v) => { ctx.ui.filtroRep = Object.assign({}, f, { [k]: v || null }); PA.ui.desenhar(); };
     const R = PA.motor.reprovas(ctx.estado, ctx.resultado, f);
-    PA.ui.carregarUsuarios(ctx).then(() => {});
+    if (!ctx.usuariosLista) PA.ui.carregarUsuarios(ctx).then(() => { if (ctx.usuariosLista && ctx.usuariosLista.length) PA.ui.desenhar(); });
     const cats = [...new Set(PA.modelo.categoriasReprova(ctx.estado).map(c => c.nome).concat(R.porCategoria.map(c => c.categoria)))];
     const data = k => h('input', { type: 'date', value: typeof f[k] === 'number' ? PA.datas.paraISO(f[k]) : '', onchange: e => set(k, e.target.value ? PA.datas.deISO(e.target.value) : null) });
     el.appendChild(h('div.cartao', { style: { padding: '12px 16px', marginBottom: '14px' } }, h('div.linha', { style: { alignItems: 'flex-end' } },

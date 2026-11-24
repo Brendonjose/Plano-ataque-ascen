@@ -71,6 +71,9 @@
     const e = clone(novo);
     e.meta.pilhaDesfazer = [];
     e.meta.ultimoBackup = atual && atual.meta ? atual.meta.ultimoBackup : null;
+    // A planilha não tem vistorias nem categorias de reprova: mantém as do sistema.
+    if (atual && (!e.vistorias || !e.vistorias.length)) e.vistorias = clone(atual.vistorias || []);
+    if (atual && !e.categoriasReprova) e.categoriasReprova = atual.categoriasReprova ? clone(atual.categoriasReprova) : null;
     return { estado: e, backup };
   }
   function backupAtrasado(estado, hoje) {
@@ -177,7 +180,7 @@
         motivos.filter(m => !jaTinha.includes(m.categoria + '|' + m.descricao)).forEach((m, i) => {
           const c = cats.find(x => x.nome === m.categoria);
           e.pendencias.push({ id: 'p' + agora.toString(36) + i + Math.random().toString(36).slice(2, 6), ordem: agora + i, apto, etapa: m.categoria,
-            descricao: `Reprova vistoria nº ${v.numero}: ${m.descricao}`.trim(), responsavel: c ? c.empreiteira : '', abertura: v.realizada,
+            descricao: `Reprova vistoria nº ${v.numero}: ${m.descricao}`.trim(), responsavel: c ? corta(c.empreiteira, 120) : '', abertura: v.realizada,
             prazo: typeof d.novaData === 'number' ? d.novaData : null, status: 'Aberta', resolvidaEm: null, obs: '' });
         });
         lancEntrega(e, apto, 'and');

@@ -81,3 +81,21 @@ test('M3: importar estado com vistorias não quebra', () => {
   const ops = PA.dados.diff(PA.modelo.estadoVazio(), s);
   for (const op of ops) assert.ok(PA.dados.servidor.opParaRegistro(op));
 });
+// ---- Checkpoint 2 da v3 ----
+test('C2-I2: vistoria só agendada não muda a Entrega (apto bloqueado ou já entregue)', () => {
+  const res = PA.motor.calcular(e, HOJE_FIXTURE);
+  const blq = res.itens.find(i => i.ordem === 12 && i.status === 'Bloqueado').apto;
+  const s = PA.acoes.vistoria.agendar(e, blq, deISO('2026-12-10'));
+  assert.strictEqual(ent(s, blq).status, 'Bloqueado');
+  let d = PA.acoes.lancar(e, 'entrega', 174, { codigo: '1', dataReal: deISO('2026-10-01') });
+  d = PA.acoes.vistoria.agendar(d, 174, deISO('2026-12-10'));
+  assert.strictEqual(ent(d, 174).status, 'Concluído');
+});
+test('C2-M3/M4: importar por cima mantém vistorias e categorias; responsável da pendência cabe no servidor', () => {
+  let s = PA.acoes.vistoria.aprovar(e, 174, { realizada: deISO('2026-11-25') });
+  s = JSON.parse(JSON.stringify(s)); s.categoriasReprova = [{ nome: 'Piso', empreiteira: 'y'.repeat(300) }];
+  const { estado } = PA.acoes.importarPorCima(s, e);
+  assert.strictEqual(estado.vistorias.length, 1); assert.strictEqual(estado.categoriasReprova.length, 1);
+  const r = PA.acoes.vistoria.reprovar(s, 164, { realizada: deISO('2026-11-25'), motivos: [{ categoria: 'Piso', descricao: 'a' }], novaData: deISO('2026-12-02') });
+  assert.ok(r.pendencias.filter(p => p.apto === 164).every(p => p.responsavel.length <= 120));
+});

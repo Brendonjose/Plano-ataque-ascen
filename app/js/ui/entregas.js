@@ -6,7 +6,7 @@
   function render(el, ctx) {
     const f = ctx.ui.filtroEnt || {};
     const P = PA.motor.entregas(ctx.estado, ctx.resultado, f);
-    PA.ui.carregarUsuarios(ctx).then(() => {});
+    if (!ctx.usuariosLista) PA.ui.carregarUsuarios(ctx).then(() => { if (ctx.usuariosLista && ctx.usuariosLista.length) PA.ui.desenhar(); });
     const k = (cls, r, v, s) => h('div.kpi.' + cls, h('div.r', r), h('div.v', v), h('div.s', s || ''));
     el.appendChild(h('div.linha', { style: { marginBottom: '14px' } }, h('label.campo', 'Prumada', select([['', '(Todas)'], 'Final 1', 'Final 2', 'Final 3', 'Final 4', 'Finais 1-2', 'Finais 3-4'], f.prumada || '', v => { ctx.ui.filtroEnt = { prumada: v || null }; PA.ui.desenhar(); }))));
     el.appendChild(h('div.kpis',

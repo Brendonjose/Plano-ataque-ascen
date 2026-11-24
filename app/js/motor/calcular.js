@@ -4,9 +4,10 @@
   const PA = root.PA = root.PA || {};
   PA.motor = PA.motor || {};
 
-  /** A Entrega de um apto com vistorias registradas segue o histórico (a última vistoria manda). */
+  /** A Entrega de um apto com vistoria realizada (aprovada ou reprovada) segue o histórico: a última manda.
+   *  Vistoria só agendada não muda nada (o apto pode estar bloqueado ou já entregue). */
   function entregaPelasVistorias(estado) {
-    const vs = estado.vistorias || [];
+    const vs = (estado.vistorias || []).filter(v => v.resultado === 'aprovado' || v.resultado === 'reprovado');
     if (!vs.length) return estado;
     const ult = {};
     for (const v of vs) if (!ult[v.apto] || v.numero > ult[v.apto].numero || (v.numero === ult[v.apto].numero && v.resultado === 'aprovado')) ult[v.apto] = v;
