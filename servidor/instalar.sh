@@ -62,7 +62,19 @@ rodar chmod 700 "$DESTINO/pb_data"
 
 ARGS=(--dir "$DESTINO/pb_data" --publicDir "$DESTINO/pb_public" --migrationsDir "$DESTINO/pb_migrations" --hooksDir "$DESTINO/pb_hooks")
 passo 4 "Aplicar as migrações do banco (cria ou atualiza as tabelas)"
-rodar sudo -u "$USUARIO" "$DESTINO/pocketbase" migrate up "${ARGS[@]}"
+# O banco fica travado enquanto o serviço roda: para antes de migrar (volta no passo 5).
+if [[ $SIMULAR -eq 0 ]] && systemctl is-active --quiet plano-ataque 2>/dev/null; then systemctl stop plano-ataque; fi
+if [[ $SIMULAR -eq 1 ]]; then
+  echo "      (simulação) pocketbase migrate up"
+else
+  SAIDA_MIG=$(sudo -u "$USUARIO" "$DESTINO/pocketbase" migrate up "${ARGS[@]}" 2>&1) || true
+  echo "$SAIDA_MIG" | sed 's/^/      /'
+  if echo "$SAIDA_MIG" | grep -qiE 'failed|error'; then
+    echo "ERRO: as migrações não foram aplicadas. Os dados não foram alterados."
+    systemctl start plano-ataque 2>/dev/null || true
+    exit 4
+  fi
+fi
 
 passo 5 "Instalar o serviço systemd (inicia sozinho e reinicia se cair) para https://$DOMINIO"
 UNIT=/etc/systemd/system/plano-ataque.service
